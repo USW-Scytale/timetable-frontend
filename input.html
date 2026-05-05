@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>내 정보 입력 · 수원대 스마트 시간표</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:       #3B82F6;
+      --blue-dark:  #2563EB;
+      --blue-bg:    #EFF6FF;
+      --blue-mid:   #DBEAFE;
+      --blue-ring:  rgba(59,130,246,.25);
+      --text-dark:  #0F172A;
+      --text-mid:   #334155;
+      --text-soft:  #64748B;
+      --text-muted: #94A3B8;
+      --border:     #E2E8F0;
+      --border-hover:#CBD5E1;
+      --white:      #FFFFFF;
+      --bg:         #F8FAFC;
+      --shadow-sm:  0 2px 8px rgba(0,0,0,.06);
+      --shadow-md:  0 4px 20px rgba(0,0,0,.08);
+      --radius-card:18px;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text-dark);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ══════════════════════════════
+       NAVBAR
+    ══════════════════════════════ */
+    .navbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .navbar-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+    }
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--blue);
+      border-radius: 8px;
+      display: grid; place-items: center;
+    }
+    .logo-mark svg {
+      width: 17px; height: 17px;
+      fill: none; stroke: #fff;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .logo-text {
+      font-size: 15px; font-weight: 700;
+      color: var(--text-dark); letter-spacing: -.3px;
+    }
+    .logo-text em { font-style: normal; color: var(--blue); }
+    .save-hint {
+      font-size: 12px; color: var(--text-muted);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .save-hint::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: #22C55E;
+      border-radius: 50%;
+    }
+
+    /* ══════════════════════════════
+       PAGE WRAPPER
+    ══════════════════════════════ */
+    .page {
+      flex: 1;
+      max-width: 760px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* ══════════════════════════════
+       PROGRESS STEPPER
+    ══════════════════════════════ */
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+    }
+    .step-circle {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-size: 14px; font-weight: 700;
+      border: 2px solid var(--border);
+      background: var(--white);
+      color: var(--text-muted);
+      transition: all .25s;
+      position: relative;
+      z-index: 1;
+    }
+    .step.active .step-circle {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: var(--white);
+      box-shadow: 0 0 0 5px var(--blue-ring);
+    }
+    .step.done .step-circle {
+      background: var(--blue-bg);
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+    .step.done .step-circle::after {
+      content: '✓';
+      font-size: 14px;
+    }
+    .step.done .step-num { display: none; }
+    .step-label {
+      font-size: 12px; font-weight: 500;
+      color: var(--text-muted);
+      white-space: nowrap;
+      letter-spacing: -.1px;
+    }
+    .step.active .step-label { color: var(--blue); font-weight: 700; }
+    .step.done  .step-label { color: var(--blue); }
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      margin: 0 8px;
+      margin-bottom: 22px;
+      min-width: 48px;
+      max-width: 100px;
+      transition: background .25s;
+    }
+    .step-line.done { background: var(--blue-mid); }
+
+    /* ══════════════════════════════
+       PAGE HEADER
+    ══════════════════════════════ */
+    .page-header { text-align: center; }
+    .page-title {
+      font-size: clamp(22px, 4vw, 28px);
+      font-weight: 900;
+      color: var(--text-dark);
+      letter-spacing: -1px;
+      margin-bottom: 8px;
+    }
+    .page-sub {
+      font-size: 15px; font-weight: 400;
+      color: var(--text-soft);
+    }
+
+    /* ══════════════════════════════
+       CARDS
+    ══════════════════════════════ */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 20px 28px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-icon {
+      width: 38px; height: 38px;
+      background: var(--blue-bg);
+      border-radius: 10px;
+      display: grid; place-items: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .card-title-text {
+      font-size: 16px; font-weight: 700;
+      color: var(--text-dark); letter-spacing: -.3px;
+    }
+    .card-body {
+      padding: 20px 28px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ══════════════════════════════
+       FORM FIELDS
+    ══════════════════════════════ */
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-label {
+      font-size: 13px; font-weight: 600;
+      color: var(--text-mid); letter-spacing: -.1px;
+    }
+    .field-label .req {
+      color: var(--blue);
+      margin-left: 2px;
+    }
+
+    /* Select */
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-color: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 36px 12px 14px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px; font-weight: 400;
+      color: var(--text-dark);
+      cursor: pointer;
+      transition: border-color .18s, box-shadow .18s;
+      width: 100%;
+    }
+    select:hover  { border-color: var(--border-hover); }
+    select:focus  {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px var(--blue-ring);
+    }
+
+    /* Number input */
+    .number-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .number-wrap input[type="number"] {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 56px 12px 14px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px; font-weight: 500;
+      color: var(--text-dark);
+      background: var(--white);
+      transition: border-color .18s, box-shadow .18s;
+      -moz-appearance: textfield;
+    }
+    .number-wrap input[type="number"]::-webkit-inner-spin-button,
+    .number-wrap input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .number-wrap input[type="number"]:hover { border-color: var(--border-hover); }
+    .number-wrap input[type="number"]:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px var(--blue-ring);
+    }
+    .number-unit {
+      position: absolute;
+      right: 14px;
+      font-size: 12px; font-weight: 500;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .number-stepper {
+      position: absolute;
+      right: 0;
+      top: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      border-left: 1.5px solid var(--border);
+      overflow: hidden;
+      border-radius: 0 10px 10px 0;
+    }
+    .number-stepper button {
+      flex: 1;
+      width: 36px;
+      background: var(--bg);
+      border: none;
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--text-soft);
+      transition: background .15s, color .15s;
+      line-height: 1;
+      padding: 0;
+    }
+    .number-stepper button:hover { background: var(--blue-bg); color: var(--blue); }
+    .number-stepper button:first-child { border-bottom: 1px solid var(--border); }
+
+    /* field hint */
+    .field-hint {
+      font-size: 11.5px; font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    /* ══════════════════════════════
+       TOGGLE (일반 / 편입)
+    ══════════════════════════════ */
+    .toggle-group {
+      display: inline-flex;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      width: 100%;
+    }
+    .toggle-group input[type="radio"] { display: none; }
+    .toggle-group label {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      font-size: 14px; font-weight: 500;
+      color: var(--text-soft);
+      cursor: pointer;
+      background: var(--white);
+      transition: background .18s, color .18s;
+      user-select: none;
+    }
+    .toggle-group label:first-of-type { border-right: 1px solid var(--border); }
+    .toggle-group input[type="radio"]:checked + label {
+      background: var(--blue);
+      color: var(--white);
+      font-weight: 700;
+    }
+
+    /* ══════════════════════════════
+       TRANSFER EXTRA (숨김/표시)
+    ══════════════════════════════ */
+    .transfer-extra {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height .35s cubic-bezier(.4,0,.2,1), opacity .3s, margin-top .3s;
+      margin-top: 0;
+    }
+    .transfer-extra.visible {
+      max-height: 400px;
+      opacity: 1;
+      margin-top: 4px;
+    }
+    .transfer-box {
+      background: var(--blue-bg);
+      border: 1px solid var(--blue-mid);
+      border-radius: 12px;
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .transfer-box-title {
+      font-size: 13px; font-weight: 700;
+      color: var(--blue);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .transfer-box-title::before {
+      content: '';
+      width: 3px; height: 14px;
+      background: var(--blue);
+      border-radius: 2px;
+    }
+
+    /* Radio buttons (편입 학년) */
+    .radio-group {
+      display: flex;
+      gap: 12px;
+    }
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .radio-option input[type="radio"] { display: none; }
+    .radio-custom {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      background: var(--white);
+      display: grid; place-items: center;
+      transition: border-color .18s;
+      flex-shrink: 0;
+    }
+    .radio-custom::after {
+      content: '';
+      width: 8px; height: 8px;
+      background: var(--blue);
+      border-radius: 50%;
+      opacity: 0;
+      transform: scale(.4);
+      transition: opacity .18s, transform .18s;
+    }
+    .radio-option input[type="radio"]:checked ~ .radio-custom {
+      border-color: var(--blue);
+    }
+    .radio-option input[type="radio"]:checked ~ .radio-custom::after {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .radio-option input[type="radio"]:checked ~ .radio-label {
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+    .radio-label {
+      font-size: 14px; font-weight: 400;
+      color: var(--text-soft);
+      transition: color .18s;
+    }
+
+    /* ══════════════════════════════
+       CREDIT GRID (카드2)
+    ══════════════════════════════ */
+    .credit-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .credit-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .credit-bar-wrap {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .credit-bar {
+      height: 100%;
+      background: var(--blue);
+      border-radius: 2px;
+      width: 0%;
+      transition: width .4s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ══════════════════════════════
+       BOTTOM BUTTONS
+    ══════════════════════════════ */
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 15px 32px;
+      border-radius: 12px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background .18s, transform .16s, box-shadow .18s, color .18s;
+      letter-spacing: -.2px;
+      text-decoration: none;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-back {
+      background: var(--white);
+      color: var(--text-soft);
+      border: 1.5px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-back:hover {
+      background: var(--bg);
+      border-color: var(--border-hover);
+      color: var(--text-mid);
+    }
+    .btn-next {
+      flex: 1;
+      justify-content: center;
+      background: var(--blue);
+      color: var(--white);
+      box-shadow: 0 4px 20px rgba(59,130,246,.38);
+    }
+    .btn-next:hover {
+      background: var(--blue-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(59,130,246,.48);
+    }
+    .btn-arrow {
+      font-size: 17px;
+      transition: transform .18s;
+    }
+    .btn-next:hover .btn-arrow { transform: translateX(4px); }
+    .btn-back-arrow {
+      font-size: 17px;
+      transition: transform .18s;
+    }
+    .btn-back:hover .btn-back-arrow { transform: translateX(-4px); }
+
+    /* ══════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════ */
+    @media (max-width: 560px) {
+      .page { padding: 28px 16px 60px; }
+      .card-body { padding: 16px 18px 22px; }
+      .card-header { padding: 18px 18px 0; }
+      .field-row  { grid-template-columns: 1fr; gap: 14px; }
+      .credit-grid { grid-template-columns: 1fr; }
+      .step-line  { min-width: 28px; }
+      .btn { padding: 14px 20px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a class="logo" href="index.html">
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="3"  y1="9" x2="21" y2="9"/>
+            <line x1="8"  y1="2" x2="8"  y2="6"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8"  y1="13" x2="16" y2="13" stroke-width="1.5"/>
+            <line x1="8"  y1="17" x2="13" y2="17" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <span class="logo-text"><em>수원대</em> 스마트 시간표</span>
+      </a>
+      <span class="save-hint">자동 저장됨</span>
+    </div>
+  </nav>
+
+  <!-- ── Page ── -->
+  <div class="page">
+
+    <!-- 진행 표시바 -->
+    <div class="stepper" role="list">
+      <div class="step active" role="listitem">
+        <div class="step-circle"><span class="step-num">1</span></div>
+        <span class="step-label">내 정보</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" role="listitem">
+        <div class="step-circle"><span class="step-num">2</span></div>
+        <span class="step-label">조건 설정</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" role="listitem">
+        <div class="step-circle"><span class="step-num">3</span></div>
+        <span class="step-label">결과</span>
+      </div>
+    </div>
+
+    <!-- 페이지 타이틀 -->
+    <div class="page-header">
+      <h1 class="page-title">내 정보를 입력해주세요</h1>
+      <p class="page-sub">입력하신 정보로 졸업요건을 분석합니다</p>
+    </div>
+
+    <!-- ── 카드 1: 기본 정보 ── -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🎓</div>
+        <span class="card-title-text">기본 정보</span>
+      </div>
+      <div class="card-body">
+
+        <!-- 학과 -->
+        <div class="field">
+          <label class="field-label" for="dept">학과 선택<span class="req">*</span></label>
+          <select id="dept" name="dept">
+            <option value="" disabled selected>학과를 선택하세요</option>
+            <option value="ai">AI데이터사이언스학과</option>
+            <option value="cs">컴퓨터학부</option>
+            <option value="biz">경영학과</option>
+            <option value="ee">전자공학부</option>
+            <option value="chem">화학공학과</option>
+            <option value="etc">기타 학과</option>
+          </select>
+        </div>
+
+        <!-- 학년 + 편입 여부 -->
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label" for="grade">학년<span class="req">*</span></label>
+            <select id="grade" name="grade">
+              <option value="" disabled selected>학년 선택</option>
+              <option value="1">1학년</option>
+              <option value="2">2학년</option>
+              <option value="3">3학년</option>
+              <option value="4">4학년</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <span class="field-label">입학 유형<span class="req">*</span></span>
+            <div class="toggle-group">
+              <input type="radio" name="admit" id="admit-normal" value="normal" checked />
+              <label for="admit-normal">일반입학</label>
+              <input type="radio" name="admit" id="admit-transfer" value="transfer" />
+              <label for="admit-transfer">편입생</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 편입생 추가 정보 (조건부 표시) -->
+        <div class="transfer-extra" id="transferExtra">
+          <div class="transfer-box">
+            <div class="transfer-box-title">편입생 추가 정보</div>
+
+            <div class="field">
+              <span class="field-label">편입 학년</span>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" name="transfer-grade" value="2" checked />
+                  <span class="radio-custom"></span>
+                  <span class="radio-label">2학년 편입</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="transfer-grade" value="3" />
+                  <span class="radio-custom"></span>
+                  <span class="radio-label">3학년 편입</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="transfer-credit">편입 전 인정학점</label>
+              <div class="number-wrap">
+                <input type="number" id="transfer-credit" name="transfer-credit"
+                       min="0" max="100" value="0" placeholder="0" />
+                <span class="number-unit">학점</span>
+                <div class="number-stepper">
+                  <button type="button" onclick="stepNum('transfer-credit', 1)" aria-label="증가">▲</button>
+                  <button type="button" onclick="stepNum('transfer-credit', -1)" aria-label="감소">▼</button>
+                </div>
+              </div>
+              <span class="field-hint">이전 대학에서 인정받은 학점을 입력하세요</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /card1 -->
+
+    <!-- ── 카드 2: 이수 학점 현황 ── -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📊</div>
+        <span class="card-title-text">이수 학점 현황</span>
+      </div>
+      <div class="card-body">
+
+        <div class="credit-grid">
+
+          <div class="credit-item field">
+            <label class="field-label" for="c-major-req">전공필수</label>
+            <div class="number-wrap">
+              <input type="number" id="c-major-req" name="c-major-req"
+                     min="0" max="50" value="0"
+                     oninput="updateBar('c-major-req','bar-major-req',50)" />
+              <span class="number-unit">학점</span>
+              <div class="number-stepper">
+                <button type="button" onclick="stepNum('c-major-req',1);updateBar('c-major-req','bar-major-req',50)" aria-label="증가">▲</button>
+                <button type="button" onclick="stepNum('c-major-req',-1);updateBar('c-major-req','bar-major-req',50)" aria-label="감소">▼</button>
+              </div>
+            </div>
+            <div class="credit-bar-wrap"><div class="credit-bar" id="bar-major-req"></div></div>
+          </div>
+
+          <div class="credit-item field">
+            <label class="field-label" for="c-major-core">전공핵심</label>
+            <div class="number-wrap">
+              <input type="number" id="c-major-core" name="c-major-core"
+                     min="0" max="50" value="0"
+                     oninput="updateBar('c-major-core','bar-major-core',50)" />
+              <span class="number-unit">학점</span>
+              <div class="number-stepper">
+                <button type="button" onclick="stepNum('c-major-core',1);updateBar('c-major-core','bar-major-core',50)" aria-label="증가">▲</button>
+                <button type="button" onclick="stepNum('c-major-core',-1);updateBar('c-major-core','bar-major-core',50)" aria-label="감소">▼</button>
+              </div>
+            </div>
+            <div class="credit-bar-wrap"><div class="credit-bar" id="bar-major-core"></div></div>
+          </div>
+
+          <div class="credit-item field">
+            <label class="field-label" for="c-major-elec">전공선택</label>
+            <div class="number-wrap">
+              <input type="number" id="c-major-elec" name="c-major-elec"
+                     min="0" max="50" value="0"
+                     oninput="updateBar('c-major-elec','bar-major-elec',50)" />
+              <span class="number-unit">학점</span>
+              <div class="number-stepper">
+                <button type="button" onclick="stepNum('c-major-elec',1);updateBar('c-major-elec','bar-major-elec',50)" aria-label="증가">▲</button>
+                <button type="button" onclick="stepNum('c-major-elec',-1);updateBar('c-major-elec','bar-major-elec',50)" aria-label="감소">▼</button>
+              </div>
+            </div>
+            <div class="credit-bar-wrap"><div class="credit-bar" id="bar-major-elec"></div></div>
+          </div>
+
+          <div class="credit-item field">
+            <label class="field-label" for="c-general">교양</label>
+            <div class="number-wrap">
+              <input type="number" id="c-general" name="c-general"
+                     min="0" max="50" value="0"
+                     oninput="updateBar('c-general','bar-general',50)" />
+              <span class="number-unit">학점</span>
+              <div class="number-stepper">
+                <button type="button" onclick="stepNum('c-general',1);updateBar('c-general','bar-general',50)" aria-label="증가">▲</button>
+                <button type="button" onclick="stepNum('c-general',-1);updateBar('c-general','bar-general',50)" aria-label="감소">▼</button>
+              </div>
+            </div>
+            <div class="credit-bar-wrap"><div class="credit-bar" id="bar-general"></div></div>
+          </div>
+
+        </div>
+        <p class="field-hint">현재까지 이수 완료한 학점을 입력하세요 (최대 50학점)</p>
+      </div>
+    </div><!-- /card2 -->
+
+    <!-- ── 하단 버튼 ── -->
+    <div class="btn-row">
+      <a href="index.html" class="btn btn-back">
+        <span class="btn-back-arrow">←</span>
+        이전
+      </a>
+      <button type="button" class="btn btn-next" onclick="goNext()">
+        다음 단계
+        <span class="btn-arrow">→</span>
+      </button>
+    </div>
+
+  </div><!-- /page -->
+
+  <script>
+    /* ── 편입생 토글 ── */
+    const radios = document.querySelectorAll('input[name="admit"]');
+    const extra  = document.getElementById('transferExtra');
+
+    radios.forEach(r => r.addEventListener('change', () => {
+      const isTransfer = document.getElementById('admit-transfer').checked;
+      extra.classList.toggle('visible', isTransfer);
+    }));
+
+    /* ── 숫자 스텝 버튼 ── */
+    function stepNum(id, delta) {
+      const el = document.getElementById(id);
+      const min = Number(el.min ?? 0);
+      const max = Number(el.max ?? Infinity);
+      el.value  = Math.min(max, Math.max(min, Number(el.value) + delta));
+      el.dispatchEvent(new Event('input'));
+    }
+
+    /* ── 학점 바 업데이트 ── */
+    function updateBar(inputId, barId, max) {
+      const val = Math.min(max, Math.max(0, Number(document.getElementById(inputId).value) || 0));
+      document.getElementById(barId).style.width = (val / max * 100) + '%';
+    }
+
+    /* ── 다음 단계 유효성 검사 ── */
+    function goNext() {
+      const dept  = document.getElementById('dept').value;
+      const grade = document.getElementById('grade').value;
+      if (!dept)  { shake('dept');  return; }
+      if (!grade) { shake('grade'); return; }
+      window.location.href = 'option.html';
+    }
+
+    function shake(id) {
+      const el = document.getElementById(id);
+      el.style.borderColor = '#EF4444';
+      el.style.boxShadow   = '0 0 0 3px rgba(239,68,68,.2)';
+      el.animate([
+        { transform: 'translateX(0)' },
+        { transform: 'translateX(-6px)' },
+        { transform: 'translateX(6px)' },
+        { transform: 'translateX(-4px)' },
+        { transform: 'translateX(4px)' },
+        { transform: 'translateX(0)' },
+      ], { duration: 320, easing: 'ease-in-out' });
+      setTimeout(() => {
+        el.style.borderColor = '';
+        el.style.boxShadow   = '';
+      }, 1600);
+      el.focus();
+    }
+  </script>
+
+</body>
+</html>

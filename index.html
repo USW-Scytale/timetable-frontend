@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>수원대 스마트 시간표</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:      #3B82F6;
+      --blue-dark: #2563EB;
+      --blue-bg:   #EFF6FF;
+      --blue-mid:  #DBEAFE;
+      --text-dark: #0F172A;
+      --text-mid:  #334155;
+      --text-soft: #64748B;
+      --border:    #E2E8F0;
+      --white:     #FFFFFF;
+      --bg:        #F8FAFF;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══════════════════════════
+       NAVBAR
+    ═══════════════════════════ */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .navbar-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-mark {
+      width: 34px;
+      height: 34px;
+      background: var(--blue);
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .logo-mark svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .logo-label {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: -0.4px;
+    }
+
+    .logo-label em {
+      font-style: normal;
+      color: var(--blue);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-soft);
+      text-decoration: none;
+      transition: color .18s;
+    }
+
+    .nav-links a:hover { color: var(--blue); }
+
+    .nav-cta {
+      padding: 8px 20px;
+      background: var(--blue);
+      color: var(--white) !important;
+      border-radius: 9px;
+      font-weight: 600 !important;
+      transition: background .18s, transform .15s !important;
+    }
+
+    .nav-cta:hover {
+      background: var(--blue-dark) !important;
+      transform: translateY(-1px);
+      color: var(--white) !important;
+    }
+
+    /* ═══════════════════════════
+       HERO
+    ═══════════════════════════ */
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 88px 24px 0;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--blue-bg);
+      border: 1px solid var(--blue-mid);
+      border-radius: 999px;
+      padding: 7px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--blue);
+      margin-bottom: 32px;
+    }
+
+    .hero-badge-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--blue);
+      border-radius: 50%;
+      animation: blink 2.2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; transform: scale(1);   }
+      50%       { opacity: .35; transform: scale(1.5); }
+    }
+
+    .hero-title {
+      font-size: clamp(36px, 5.5vw, 62px);
+      font-weight: 900;
+      line-height: 1.14;
+      letter-spacing: -2px;
+      color: var(--text-dark);
+      margin-bottom: 20px;
+    }
+
+    .hero-title .accent {
+      color: var(--blue);
+      position: relative;
+      display: inline-block;
+    }
+
+    .hero-title .accent::after {
+      content: '';
+      position: absolute;
+      inset: auto 0 4px;
+      height: 7px;
+      background: var(--blue-mid);
+      border-radius: 3px;
+      z-index: -1;
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--text-soft);
+      line-height: 1.75;
+      margin-bottom: 44px;
+      max-width: 520px;
+    }
+
+    .hero-sub strong {
+      color: var(--text-mid);
+      font-weight: 600;
+    }
+
+    /* ═══════════════════════════
+       CTA BUTTON
+    ═══════════════════════════ */
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 18px 44px;
+      background: var(--blue);
+      color: var(--white);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 6px 28px rgba(59,130,246,.40);
+      transition: background .2s, transform .18s, box-shadow .2s;
+      margin-bottom: 80px;
+    }
+
+    .cta-btn:hover {
+      background: var(--blue-dark);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 36px rgba(59,130,246,.50);
+    }
+
+    .cta-btn:active { transform: translateY(0); }
+
+    .cta-arrow {
+      font-size: 20px;
+      transition: transform .2s;
+    }
+
+    .cta-btn:hover .cta-arrow { transform: translateX(5px); }
+
+    /* ═══════════════════════════
+       FEATURE CARDS
+    ═══════════════════════════ */
+    .cards-section {
+      width: 100%;
+      background: var(--blue-bg);
+      padding: 72px 24px 80px;
+    }
+
+    .cards-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .cards-label {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--blue);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .cards-heading {
+      text-align: center;
+      font-size: clamp(22px, 3vw, 30px);
+      font-weight: 800;
+      color: var(--text-dark);
+      letter-spacing: -0.8px;
+      margin-bottom: 48px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,.055);
+      transition: transform .22s, box-shadow .22s, border-color .22s;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 40px rgba(59,130,246,.16);
+      border-color: var(--blue-mid);
+    }
+
+    .card-icon-wrap {
+      width: 52px;
+      height: 52px;
+      background: var(--blue-bg);
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      margin-bottom: 22px;
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: -0.4px;
+      margin-bottom: 10px;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-soft);
+      line-height: 1.7;
+    }
+
+    .card-tag {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 5px 12px;
+      background: var(--blue-bg);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--blue);
+      letter-spacing: -0.1px;
+    }
+
+    /* ═══════════════════════════
+       FOOTER
+    ═══════════════════════════ */
+    footer {
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      padding: 28px 32px;
+      text-align: center;
+      font-size: 12.5px;
+      color: #94a3b8;
+      line-height: 1.8;
+    }
+
+    footer strong { color: var(--text-soft); }
+
+    /* ═══════════════════════════
+       RESPONSIVE
+    ═══════════════════════════ */
+    @media (max-width: 768px) {
+      .navbar-inner { padding: 0 20px; }
+      .nav-links a:not(.nav-cta) { display: none; }
+      .hero { padding-top: 64px; }
+      .hero-sub { font-size: 16px; }
+      .cta-btn { padding: 16px 36px; font-size: 16px; margin-bottom: 60px; }
+      .cards-grid { grid-template-columns: 1fr; gap: 16px; max-width: 420px; margin: 0 auto; }
+      .card { padding: 28px 24px; }
+    }
+
+    @media (max-width: 480px) {
+      .logo-label { font-size: 15px; }
+      .hero-title { letter-spacing: -1.2px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a class="logo" href="#">
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="3"  y1="9"  x2="21" y2="9"/>
+            <line x1="8"  y1="2"  x2="8"  y2="6"/>
+            <line x1="16" y1="2"  x2="16" y2="6"/>
+            <line x1="8"  y1="13" x2="16" y2="13" stroke-width="1.5"/>
+            <line x1="8"  y1="17" x2="13" y2="17" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <span class="logo-label"><em>수원대</em> 스마트 시간표</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#">공지사항</a>
+        <a href="#">이용 가이드</a>
+        <a href="#" class="nav-cta">시작하기</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      2025학년도 2학기 수강신청 준비
+    </div>
+
+    <h1 class="hero-title">
+      졸업까지 가장<br />
+      <span class="accent">똑똑한 시간표</span>
+    </h1>
+
+    <p class="hero-sub">
+      <strong>졸업요건 분석</strong>부터 <strong>공강 최대화</strong>까지<br />
+      한번에 해결
+    </p>
+
+    <a href="input.html" class="cta-btn">
+      지금 시작하기
+      <span class="cta-arrow">→</span>
+    </a>
+
+  </section>
+
+  <!-- ── Feature Cards ── -->
+  <section class="cards-section">
+    <div class="cards-inner">
+
+      <p class="cards-label">주요 기능</p>
+      <h2 class="cards-heading">한 곳에서 모든 걸 해결하세요</h2>
+
+      <div class="cards-grid">
+
+        <div class="card">
+          <div class="card-icon-wrap">📋</div>
+          <div class="card-title">졸업요건 자동 분석</div>
+          <div class="card-desc">전공필수 / 선택 / 교양 잔여학점을 자동으로 계산하고 부족한 영역을 한눈에 확인하세요.</div>
+          <span class="card-tag">자동 계산</span>
+        </div>
+
+        <div class="card">
+          <div class="card-icon-wrap">📅</div>
+          <div class="card-title">최적 시간표 추천</div>
+          <div class="card-desc">공강 최대화, 아침 강의 제외 등 나만의 조건을 설정하면 최적의 시간표를 추천해 드립니다.</div>
+          <span class="card-tag">맞춤 설정</span>
+        </div>
+
+        <div class="card">
+          <div class="card-icon-wrap">🏫</div>
+          <div class="card-title">빈 강의실 찾기</div>
+          <div class="card-desc">공강 시간에 이용 가능한 강의실을 실시간으로 안내해 드립니다. 조용한 공간을 빠르게 찾아보세요.</div>
+          <span class="card-tag">실시간 안내</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer>
+    <strong>수원대 스마트 시간표</strong> · 수원대학교 비공식 서비스<br />
+    © 2025 All rights reserved.
+  </footer>
+
+</body>
+</html>
