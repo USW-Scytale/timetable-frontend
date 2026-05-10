@@ -1721,35 +1721,39 @@ body {
     }
 
 /* ═══════════════════════════════════════════════
-   NOTION THEME OVERRIDE
-   getdesign: notion
+   MIRO THEME OVERRIDE
+   getdesign: miro
 ═══════════════════════════════════════════════ */
 :root {
-  --blue:        #2383E2;
-  --blue-dark:   #1A75C9;
-  --blue-bg:     #EDF3FC;
-  --blue-mid:    #C7D9F5;
-  --blue-ring:   rgba(35,131,226,.18);
-  --text-dark:   #37352F;
-  --text-mid:    #4B4840;
-  --text-soft:   #787774;
-  --text-muted:  #ACABA8;
-  --border:      #E9E9E7;
-  --border-hover:#D4D4D2;
-  --border-h:    #D4D4D2;
+  --blue:        #4262FF;   /* Miro Blue */
+  --blue-dark:   #2D4FE8;
+  --blue-bg:     #EEEFFE;
+  --blue-mid:    #C5CCFF;
+  --blue-ring:   rgba(66,98,255,.18);
+  --text-dark:   #1A1A1A;
+  --text-mid:    #3C3C3C;
+  --text-soft:   #575757;
+  --text-muted:  #A0A0A0;
+  --border:      #EBEBEB;
+  --border-hover:#D0D0D0;
+  --border-h:    #D0D0D0;
   --white:       #FFFFFF;
-  --bg:          #FBFBFA;
-  --shadow-sm:   0 1px 2px rgba(0,0,0,.04), 0 0 0 1px rgba(55,53,47,.08);
-  --shadow-md:   0 2px 8px rgba(0,0,0,.06), 0 0 0 1px rgba(55,53,47,.08);
-  --radius-card: 8px;
-  --r-card:      8px;
-  --c1: #2383E2; --c2: #9065B0; --c3: #1E8A46; --c4: #CB912F; --c5: #D44C47;
-  --green:     #1E8A46;
-  --green-bg:  #EDFAF3;
-  --green-mid: #B7DFCA;
-  --red:       #D44C47;
-  --red-bg:    #FDF3F3;
-  --red-mid:   #F3C7C6;
+  --bg:          #F5F5F5;
+  --shadow-sm:   0 2px 8px rgba(0,0,0,.08);
+  --shadow-md:   0 4px 16px rgba(0,0,0,.12);
+  --radius-card: 12px;
+  --r-card:      12px;
+  --c1: #4262FF; --c2: #9B59B6; --c3: #00C875; --c4: #F5A623; --c5: #F24E1E;
+  --green:     #00C875;
+  --green-bg:  #E6FFF5;
+  --green-mid: #AAEFD5;
+  --red:       #F24E1E;
+  --red-bg:    #FFF0EB;
+  --red-mid:   #FFB8A0;
+  /* Miro Yellow (primary CTA) */
+  --miro-yellow:      #FFD02F;
+  --miro-yellow-dark: #F5C800;
+  --miro-yellow-bg:   #FFFBEB;
 }
 
 body,
@@ -1757,50 +1761,72 @@ select, input, button, textarea {
   font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
-/* Notion-style navbar */
+/* Miro navbar — 흰 배경 + 그림자 */
 #route-home .navbar {
-  background: rgba(251,251,250,.92) !important;
-  border-bottom: 1px solid var(--border) !important;
+  background: rgba(255,255,255,.96) !important;
+  border-bottom: none !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,.1) !important;
 }
-#route-home .nav-cta,
-#route-input .btn-primary,
-#route-option .btn-primary {
-  border-radius: 6px !important;
-}
+
+/* Miro CTA 버튼 — 시그니처 노란색 */
 #route-home .cta-btn {
-  border-radius: 8px !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,.12) !important;
+  background: var(--miro-yellow) !important;
+  color: #1A1A1A !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(255,208,47,.4) !important;
   font-size: 16px !important;
 }
 #route-home .cta-btn:hover {
-  box-shadow: 0 2px 8px rgba(35,131,226,.28) !important;
-  transform: translateY(-1px) !important;
+  background: var(--miro-yellow-dark) !important;
+  box-shadow: 0 6px 20px rgba(255,208,47,.5) !important;
+  transform: translateY(-2px) !important;
 }
+
+/* Miro nav CTA 버튼 */
+#route-home .nav-cta {
+  background: var(--miro-yellow) !important;
+  color: #1A1A1A !important;
+  border-radius: 8px !important;
+}
+#route-home .nav-cta:hover {
+  background: var(--miro-yellow-dark) !important;
+  color: #1A1A1A !important;
+}
+
+/* 카드 섹션 배경 */
 #route-home .cards-section {
-  background: #F7F6F3 !important;
+  background: #FFFFFF !important;
+  border-top: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--border) !important;
 }
+
+/* 카드 스타일 */
 #route-home .card,
 #route-input .card,
 #route-option .card,
 #route-result .card,
 #route-graduation .card,
 #route-timetable .card {
-  border-radius: 8px !important;
-  box-shadow: 0 0 0 1px rgba(55,53,47,.09), 0 2px 6px rgba(0,0,0,.04) !important;
-  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08) !important;
+  border: 1px solid var(--border) !important;
 }
 #route-home .card:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 0 0 1px rgba(55,53,47,.09), 0 4px 12px rgba(0,0,0,.08) !important;
-  border-color: transparent !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 24px rgba(66,98,255,.16) !important;
+  border-color: var(--blue-mid) !important;
 }
+
+/* 히어로 배지 — Miro Yellow */
 #route-home .hero-badge {
-  background: #F7F6F3 !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 6px !important;
-  color: var(--text-soft) !important;
+  background: var(--miro-yellow-bg) !important;
+  border: 1px solid #FFE680 !important;
+  border-radius: 999px !important;
+  color: #8B6F00 !important;
 }
-#route-home .hero-badge-dot { background: var(--blue) !important; }
+#route-home .hero-badge-dot { background: var(--miro-yellow) !important; }
+
+/* 로고 마크 — Miro Yellow */
 #route-home .logo-mark,
 #route-input .logo-mark,
 #route-option .logo-mark,
@@ -1808,48 +1834,74 @@ select, input, button, textarea {
 #route-graduation .logo-mark,
 #route-rooms .logo-mark,
 #route-timetable .logo-mark {
+  background: var(--miro-yellow) !important;
+  border-radius: 10px !important;
+}
+#route-home .logo-mark svg,
+#route-input .logo-mark svg,
+#route-option .logo-mark svg,
+#route-result .logo-mark svg,
+#route-graduation .logo-mark svg,
+#route-rooms .logo-mark svg,
+#route-timetable .logo-mark svg {
+  stroke: #1A1A1A !important;
+}
+
+/* 카드 아이콘 배경 */
+#route-home .card-icon-wrap {
+  background: var(--miro-yellow-bg) !important;
+  border-radius: 10px !important;
+}
+#route-home .card-tag {
+  background: var(--miro-yellow-bg) !important;
+  color: #8B6F00 !important;
   border-radius: 6px !important;
 }
 
-/* Notion-style inputs & selects */
+/* 인풋/셀렉트 */
 select, input[type="number"], input[type="text"] {
-  border-radius: 6px !important;
+  border-radius: 8px !important;
   border-color: var(--border) !important;
 }
 select:focus, input:focus {
   border-color: var(--blue) !important;
-  box-shadow: 0 0 0 2px var(--blue-ring) !important;
+  box-shadow: 0 0 0 3px var(--blue-ring) !important;
 }
 
-/* Notion-style toggle/radio */
-#route-input .toggle-group { border-radius: 6px !important; }
-#route-input .number-stepper { border-radius: 0 6px 6px 0 !important; }
-#route-input .number-wrap input[type="number"] { border-radius: 6px !important; }
+/* 토글/라디오 */
+#route-input .toggle-group { border-radius: 8px !important; }
+#route-input .toggle-group input[type="radio"]:checked + label {
+  background: var(--blue) !important;
+}
+#route-input .number-stepper { border-radius: 0 8px 8px 0 !important; }
+#route-input .number-wrap input[type="number"] { border-radius: 8px !important; }
 
-/* Notion-style step indicator */
+/* 스텝 서클 */
 #route-input .step.active .step-circle {
   background: var(--blue) !important;
   border-color: var(--blue) !important;
-  box-shadow: 0 0 0 4px rgba(35,131,226,.16) !important;
+  box-shadow: 0 0 0 5px rgba(66,98,255,.18) !important;
 }
+
+/* Transfer 박스 */
 #route-input .transfer-box {
-  background: #F7F6F3 !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 6px !important;
+  background: var(--miro-yellow-bg) !important;
+  border: 1px solid #FFE680 !important;
+  border-radius: 10px !important;
 }
-#route-input .transfer-box-title { color: var(--text-dark) !important; }
-#route-input .transfer-box-title::before { background: var(--text-dark) !important; }
+#route-input .transfer-box-title { color: #8B6F00 !important; }
+#route-input .transfer-box-title::before { background: #FFD02F !important; }
 
 /* Footer */
 #route-home footer {
-  background: #F7F6F3 !important;
+  background: #FFFFFF !important;
   border-top: 1px solid var(--border) !important;
 }
 
-/* Period & building buttons */
+/* 빈 강의실 버튼 */
 #route-rooms .period-btn,
 #route-rooms .bldg-btn {
-  border-radius: 6px !important;
+  border-radius: 8px !important;
   border-color: var(--border) !important;
 }
 #route-rooms .period-btn.active,
@@ -1860,14 +1912,10 @@ select:focus, input:focus {
 }
 
 /* Room cards */
-.room-card { border-radius: 8px !important; }
+.room-card { border-radius: 12px !important; }
 
-/* Card icon backgrounds */
-#route-home .card-icon-wrap { border-radius: 6px !important; }
-#route-home .card-tag { border-radius: 4px !important; }
-
-/* Timetable route */
-#route-timetable header { background: rgba(251,251,250,.95) !important; }
+/* Timetable */
+#route-timetable header { background: rgba(255,255,255,.96) !important; }
   </style>
 </head>
 <body>
