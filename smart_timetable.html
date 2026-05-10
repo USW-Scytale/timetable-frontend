@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233B82F6'%3E%3Crect x='3' y='4' width='18' height='18' rx='3'/%3E%3Cline x1='3' y1='9' x2='21' y2='9' stroke='white' stroke-width='2'/%3E%3Cline x1='8' y1='2' x2='8' y2='6' stroke='white' stroke-width='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6' stroke='white' stroke-width='2'/%3E%3C/svg%3E" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
-  <title>수원대 스마트 시간표</title>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+  <title>suwonmate</title>
   <style>
 
 /* ─── Router styles ─── */
@@ -1916,11 +1916,23 @@ select:focus, input:focus {
 
 /* Timetable */
 #route-timetable header { background: rgba(255,255,255,.96) !important; }
+
+/* Anton 폰트 — 로고 & 메인 타이틀 */
+.logo-label, .logo-text {
+  font-family: 'Anton', 'Noto Sans KR', sans-serif !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.5px !important;
+}
+#route-home .hero-title {
+  font-family: 'Anton', 'Noto Sans KR', sans-serif !important;
+  font-weight: 400 !important;
+  letter-spacing: -1px !important;
+}
   </style>
 </head>
 <body>
 
-<section class="route" id="route-home" data-title="수원대 스마트 시간표">
+<section class="route" id="route-home" data-title="suwonmate">
 <!-- ── Navbar ── -->
   <nav class="navbar">
     <div class="navbar-inner">
@@ -1935,7 +1947,7 @@ select:focus, input:focus {
             <line x1="8"  y1="17" x2="13" y2="17" stroke-width="1.5"/>
           </svg>
         </div>
-        <span class="logo-label"><em>수원대</em> 스마트 시간표</span>
+        <span class="logo-label">suwonmate</span>
       </a>
 
       <div class="nav-links">
@@ -2007,12 +2019,12 @@ select:focus, input:focus {
 
   <!-- ── Footer ── -->
   <footer>
-    <strong>수원대 스마트 시간표</strong> · 수원대학교 비공식 서비스<br />
+    <strong>suwonmate</strong> · 수원대학교 비공식 서비스<br />
     © 2026 All rights reserved.
   </footer>
 </section>
 
-<section class="route" id="route-input" data-title="내 정보 입력 · 수원대 스마트 시간표">
+<section class="route" id="route-input" data-title="내 정보 입력 · suwonmate">
 <!-- ── Navbar ── -->
   <nav class="navbar">
     <div class="navbar-inner">
@@ -2027,7 +2039,7 @@ select:focus, input:focus {
             <line x1="8"  y1="17" x2="13" y2="17" stroke-width="1.5"/>
           </svg>
         </div>
-        <span class="logo-text"><em>수원대</em> 스마트 시간표</span>
+        <span class="logo-text">suwonmate</span>
       </a>
       <span class="save-hint">자동 저장됨</span>
     </div>
@@ -2250,7 +2262,7 @@ select:focus, input:focus {
   </div><!-- /page -->
 </section>
 
-<section class="route" id="route-option" data-title="조건 설정 · 수원대 스마트 시간표">
+<section class="route" id="route-option" data-title="조건 설정 · suwonmate">
 <!-- ── Navbar ── -->
   <nav class="navbar">
     <div class="navbar-inner">
@@ -2265,7 +2277,7 @@ select:focus, input:focus {
             <line x1="8"  y1="17" x2="13" y2="17" stroke-width="1.5"/>
           </svg>
         </div>
-        <span class="logo-text"><em>수원대</em> 스마트 시간표</span>
+        <span class="logo-text">suwonmate</span>
       </a>
       <span class="save-hint">자동 저장됨</span>
     </div>
@@ -2477,12 +2489,12 @@ select:focus, input:focus {
   </div><!-- /page -->
 </section>
 
-<section class="route" id="route-result" data-title="시간표 결과 — 수원대 스마트 시간표">
+<section class="route" id="route-result" data-title="시간표 결과 — suwonmate">
 <nav class="navbar">
   <div class="navbar-inner">
     <a class="logo" href="#home">
       <div class="logo-mark"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="13" x2="16" y2="13" stroke-width="1.5"/><line x1="8" y1="17" x2="13" y2="17" stroke-width="1.5"/></svg></div>
-      <span class="logo-label"><em>수원대</em> 스마트 시간표</span>
+      <span class="logo-label">suwonmate</span>
     </a>
     <div class="nav-links">
       <a href="#rooms">빈 강의실</a>
@@ -2570,15 +2582,15 @@ select:focus, input:focus {
 
 <div class="toast" id="toast"></div>
 
-<footer><strong>수원대 스마트 시간표</strong> · 수원대학교 비공식 서비스<br/>© 2026 All rights reserved.</footer>
+<footer><strong>suwonmate</strong> · 수원대학교 비공식 서비스<br/>© 2026 All rights reserved.</footer>
 </section>
 
-<section class="route" id="route-graduation" data-title="졸업요건 분석 — 수원대 스마트 시간표">
+<section class="route" id="route-graduation" data-title="졸업요건 분석 — suwonmate">
 <nav class="navbar">
   <div class="navbar-inner">
     <a class="logo" href="#home">
       <div class="logo-mark"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="13" x2="16" y2="13" stroke-width="1.5"/><line x1="8" y1="17" x2="13" y2="17" stroke-width="1.5"/></svg></div>
-      <span class="logo-label"><em>수원대</em> 스마트 시간표</span>
+      <span class="logo-label">suwonmate</span>
     </a>
     <div class="nav-links">
       <a href="#rooms">빈 강의실</a>
@@ -2654,15 +2666,15 @@ select:focus, input:focus {
 
 </div>
 
-<footer><strong>수원대 스마트 시간표</strong> · 수원대학교 비공식 서비스<br/>© 2026 All rights reserved.</footer>
+<footer><strong>suwonmate</strong> · 수원대학교 비공식 서비스<br/>© 2026 All rights reserved.</footer>
 </section>
 
-<section class="route" id="route-rooms" data-title="빈 강의실 찾기 — 수원대 스마트 시간표">
+<section class="route" id="route-rooms" data-title="빈 강의실 찾기 — suwonmate">
 <nav class="navbar">
   <div class="navbar-inner">
     <a class="logo" href="#home">
       <div class="logo-mark"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="13" x2="16" y2="13" stroke-width="1.5"/><line x1="8" y1="17" x2="13" y2="17" stroke-width="1.5"/></svg></div>
-      <span class="logo-label"><em>수원대</em> 스마트 시간표</span>
+      <span class="logo-label">suwonmate</span>
     </a>
     <div class="nav-links">
       <a href="#rooms" style="color:var(--blue);font-weight:700;">빈 강의실</a>
@@ -2702,10 +2714,10 @@ select:focus, input:focus {
   <div class="rooms-grid" id="roomGrid"></div>
 </div>
 
-<footer><strong>수원대 스마트 시간표</strong> · 수원대학교 비공식 서비스<br/>© 2026 All rights reserved.</footer>
+<footer><strong>suwonmate</strong> · 수원대학교 비공식 서비스<br/>© 2026 All rights reserved.</footer>
 </section>
 
-<section class="route" id="route-timetable" data-title="수원대 스마트 시간표">
+<section class="route" id="route-timetable" data-title="suwonmate">
 <!-- ─── Header ─── -->
   <header>
     <a class="logo" href="#">
@@ -2791,7 +2803,7 @@ select:focus, input:focus {
 
   <!-- ─── Footer ─── -->
   <footer>
-    © 2025 수원대 스마트 시간표 · 수원대학교 비공식 서비스
+    © 2025 suwonmate · 수원대학교 비공식 서비스
   </footer>
 </section>
 
