@@ -31437,6 +31437,9 @@ async function apiCall(path, opts = {}) {
   if (token && !token.startsWith('offline-')) {
     headers['Authorization'] = 'Bearer ' + token;
   }
+  if (getBaseUrl().includes('ngrok')) {
+    headers['ngrok-skip-browser-warning'] = 'true';
+  }
   const res = await fetch(getBaseUrl() + path, { ...opts, headers });
   let body;
   try { body = await res.json(); } catch(e) { body = null; }
@@ -31476,9 +31479,10 @@ const api = {
 
 async function _initCampusData() {
   try {
+    const ngrokHeader = getBaseUrl().includes('ngrok') ? { 'ngrok-skip-browser-warning': 'true' } : {};
     const [bRes, eRes] = await Promise.all([
-      fetch(getBaseUrl() + '/rooms/buildings'),
-      fetch(getBaseUrl() + '/rooms/walk-edges'),
+      fetch(getBaseUrl() + '/rooms/buildings', { headers: ngrokHeader }),
+      fetch(getBaseUrl() + '/rooms/walk-edges', { headers: ngrokHeader }),
     ]);
     if (bRes.ok) {
       const bData = await bRes.json();
@@ -31823,7 +31827,8 @@ async function _updateServerBar() {
   label.textContent = '서버 확인 중…';
   bar.style.background = '#F8FAFC'; bar.style.borderColor = '#E2E8F0'; bar.style.color = '#64748B';
   try {
-    const r = await fetch(getBaseUrl().replace(/\/v1$/, '') + '/health', { signal: AbortSignal.timeout(3000) });
+    const ngrokHdr = getBaseUrl().includes('ngrok') ? { 'ngrok-skip-browser-warning': 'true' } : {};
+    const r = await fetch(getBaseUrl().replace(/\/v1$/, '') + '/health', { headers: ngrokHdr, signal: AbortSignal.timeout(3000) });
     if (r.ok) {
       bar.style.background = '#F0FDF4'; bar.style.borderColor = '#A7F3D0'; bar.style.color = '#065F46';
       label.textContent = isLocalHost ? '🟢 서버 연결됨 (로컬)' : `🟢 서버 연결됨`;
