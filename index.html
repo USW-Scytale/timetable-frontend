@@ -5073,14 +5073,10 @@ footer strong { color: var(--text-dark); font-weight: 600; }
         <!-- LOGIN -->
         <div id="loginPanel">
           <div class="auth-title">다시 만나서 반가워요 👋</div>
-          <div class="auth-sub">아이디 · 학번 · 비밀번호로 로그인하세요</div>
+          <div class="auth-sub">아이디와 비밀번호로 로그인하세요</div>
           <div class="auth-field">
             <label>아이디</label>
             <input type="text" id="loginId" placeholder="아이디를 입력하세요" autocomplete="username"/>
-          </div>
-          <div class="auth-field">
-            <label>학번</label>
-            <input type="text" id="loginStu" placeholder="예) 20241234" inputmode="numeric"/>
           </div>
           <div class="auth-field">
             <label>비밀번호</label>
@@ -31457,8 +31453,8 @@ async function apiCall(path, opts = {}) {
 }
 
 const api = {
-  register:       (email, password) => apiCall('/auth/register', { method:'POST', body: JSON.stringify({ email, password }) }),
-  login:          (email, password) => apiCall('/auth/login',    { method:'POST', body: JSON.stringify({ email, password }) }),
+  register:       (data)            => apiCall('/auth/register', { method:'POST', body: JSON.stringify(data) }),
+  login:          (username, password) => apiCall('/auth/login', { method:'POST', body: JSON.stringify({ username, password }) }),
   getProfile:     ()       => apiCall('/students/me/profile'),
   updateProfile:  (data)   => apiCall('/students/me/profile', { method:'PUT', body: JSON.stringify(data) }),
   getCredits:     ()       => apiCall('/students/me/credits'),
@@ -31605,6 +31601,11 @@ function _getOfflineUsers() {
 }
 function _saveOfflineUser(user) {
   const users = _getOfflineUsers();
+  if (users.some(u => u.id === user.id)) {
+    const e = new Error('이미 사용 중인 아이디입니다.');
+    e.status = 409;
+    throw e;
+  }
   if (users.some(u => u.stu === user.stu)) {
     const e = new Error('이미 등록된 학번입니다.');
     e.status = 409;
@@ -31613,8 +31614,8 @@ function _saveOfflineUser(user) {
   users.push(user);
   localStorage.setItem(OFFLINE_USERS_KEY, JSON.stringify(users));
 }
-function _findOfflineUser(stu, pw) {
-  return _getOfflineUsers().find(u => u.stu === stu && u.pw === pw);
+function _findOfflineUser(id, pw) {
+  return _getOfflineUsers().find(u => u.id === id && u.pw === pw);
 }
 
 /* 학번에서 입학 연도 추출: '22017079' → 2022 */
@@ -31659,14 +31660,13 @@ async function doSignup() {
   };
 
   try {
-    const res = await api.register(email, pw);
+    const res = await api.register({ username: id, password: pw, student_id: stu, name, grade: parseInt(grade, 10), department: dept });
     setToken(res.data.access_token);
     persistUserInfo();
     showAuthMsg('suMsg', `✅ 가입 완료! (${admissionYear}학번, ${dept}, ${grade}학년)`, true);
     setTimeout(() => {
       switchAuthTab('login');
-      document.getElementById('loginId').value  = id;
-      document.getElementById('loginStu').value = stu;
+      document.getElementById('loginId').value = id;
       showAuthMsg('suMsg', '');
     }, 1200);
   } catch(err) {
@@ -31679,8 +31679,7 @@ async function doSignup() {
         showAuthMsg('suMsg', `✅ 오프라인 가입 완료! (${admissionYear}학번, ${dept}, ${grade}학년)`, true);
         setTimeout(() => {
           switchAuthTab('login');
-          document.getElementById('loginId').value  = id;
-          document.getElementById('loginStu').value = stu;
+          document.getElementById('loginId').value = id;
           showAuthMsg('suMsg', '');
         }, 1200);
       } catch(offErr) {
@@ -31696,36 +31695,37 @@ async function doSignup() {
 }
 
 async function doLogin() {
-  const id  = (document.getElementById('loginId').value  || '').trim();
-  const stu = (document.getElementById('loginStu').value || '').trim();
-  const pw  = document.getElementById('loginPw').value;
-  if (!id || !stu || !pw) return showAuthMsg('loginMsg', '아이디 · 학번 · 비밀번호를 모두 입력해주세요.');
+  const id = (document.getElementById('loginId').value || '').trim();
+  const pw = document.getElementById('loginPw').value;
+  if (!id || !pw) return showAuthMsg('loginMsg', '아이디와 비밀번호를 모두 입력해주세요.');
 
   const btn = document.querySelector('#loginPanel .auth-submit');
   const unlock = lockBtn(btn);
   showAuthMsg('loginMsg', '로그인 중...', true);
 
-  const email = studentIdToEmail(stu);
   const existing = (() => { try { return JSON.parse(localStorage.getItem(USER_INFO_KEY) || '{}'); } catch(e) { return {}; } })();
   const goToMain = (merged, isOffline) => {
     localStorage.setItem(USER_INFO_KEY, JSON.stringify(merged));
     if (merged.grade)         localStorage.setItem('sw_grade', merged.grade);
     if (merged.dept)        { localStorage.setItem('sw_dept', merged.dept); localStorage.setItem('sw_major', merged.dept); }
     if (merged.admissionYear) localStorage.setItem('sw_admission_year', String(merged.admissionYear));
-    SS.set(AUTH_SESSION_KEY, { id, stu, name: merged.name || id, ts: Date.now() });
+    SS.set(AUTH_SESSION_KEY, { id, stu: merged.stu || '', name: merged.name || id, ts: Date.now() });
     showAuthMsg('loginMsg', isOffline ? '🔌 오프라인 모드로 로그인합니다…' : '환영합니다! 잠시만요…', true);
     setTimeout(() => { location.hash = '#/'; unlock(); }, 400);
   };
 
   try {
-    const res = await api.login(email, pw);
+    const res = await api.login(id, pw);
     setToken(res.data.access_token);
-    let merged = { ...existing, id, stu, email };
+    let merged = { ...existing, id };
     /* 백엔드 프로필 복원 */
     try {
       const prof = await api.getProfile();
       const p = prof.data;
-      merged = { ...merged, college: p.college, dept: p.department, major: p.major || '', grade: String(p.grade) };
+      const stu = p.student_id || '';
+      const admissionYear = stu ? studentIdToAdmissionYear(stu) : null;
+      merged = { ...merged, stu, name: p.name || merged.name || id, email: stu ? `${stu}@suwon.ac.kr` : '', college: p.college, dept: p.department, major: p.major || '', grade: String(p.grade), admissionYear };
+      if (stu) localStorage.setItem('sw_admission_year', String(admissionYear));
       if (p.college)    localStorage.setItem('sw_college', p.college);
       if (p.department) { localStorage.setItem('sw_dept', p.department); localStorage.setItem('sw_major', p.major || p.department); }
       if (p.grade)      localStorage.setItem('sw_grade', String(p.grade));
@@ -31736,17 +31736,17 @@ async function doLogin() {
   } catch(err) {
     /* 백엔드가 안 떠있으면 오프라인 모드 — 로컬 사용자에서 조회 */
     if (_isNetworkError(err)) {
-      const offUser = _findOfflineUser(stu, pw);
+      const offUser = _findOfflineUser(id, pw);
       if (!offUser) {
-        showAuthMsg('loginMsg', '🔌 오프라인 모드 — 가입된 학번/비밀번호가 없어요. 회원가입을 먼저 해주세요.');
+        showAuthMsg('loginMsg', '🔌 오프라인 모드 — 가입된 아이디/비밀번호가 없어요. 회원가입을 먼저 해주세요.');
         unlock();
         return;
       }
       setToken('offline-' + Date.now());
-      goToMain({ ...existing, ...offUser, id, stu, email: offUser.email || email }, true);
+      goToMain({ ...existing, ...offUser, id }, true);
       return;
     }
-    if (err.status === 401) showAuthMsg('loginMsg', '아이디·학번·비밀번호를 확인해주세요.');
+    if (err.status === 401) showAuthMsg('loginMsg', '아이디 또는 비밀번호를 확인해주세요.');
     else                    showAuthMsg('loginMsg', `로그인 실패: ${err.message}`);
     unlock();
   }
@@ -31759,12 +31759,15 @@ function doLogout() {
   location.hash = '#/auth';
 }
 
+const _FALLBACK_UNI_TREE = {"colleges":[{"name":"인문사회융합대학","departments":[],"majors":["한국언어문화전공","디지털헤리티지전공","영미언어문화전공","러시아언어문화전공","일본언어문화전공","중국언어문화전공","법학전공","행정학전공","미디어커뮤니케이션전공","소방행정전공"]},{"name":"경영공학대학","departments":[{"name":"경제학부","majors":["경제금융전공","국제개발협력전공"]},{"name":"경영학부","majors":["경영전공","회계전공","글로벌비즈니스전공"]},{"name":"호텔관광학부","majors":["호텔경영전공","외식경영전공","관광경영전공"]}],"majors":[]},{"name":"혁신공과대학","departments":[{"name":"바이오화학산업학부","majors":["바이오공학 및 마케팅전공","융합화학산업전공"]},{"name":"건설환경에너지공학부","majors":["건설환경공학전공","환경에너지공학전공"]},{"name":"건축도시부동산학부","majors":["건축학전공","도시부동산학전공"]},{"name":"산업 및 기계공학부","majors":["산업공학전공","기계공학전공"]},{"name":"반도체공학과","majors":[]},{"name":"전기전자공학부","majors":["전기공학전공","전자공학전공"]},{"name":"화학공학·신소재공학부","majors":["신소재공학전공","화학공학전공"]}],"majors":[]},{"name":"지능형SW융합대학","departments":[{"name":"데이터과학부","majors":[]},{"name":"컴퓨터학부","majors":["컴퓨터SW전공","미디어SW전공"]},{"name":"정보통신학부","majors":["정보통신전공","정보보호전공"]}],"majors":[]},{"name":"라이프케어사이언스대학","departments":[{"name":"간호학과","majors":[]},{"name":"아동가족복지학과","majors":[]},{"name":"의류학과","majors":[]},{"name":"식품영양학과","majors":[]},{"name":"스포츠과학부","majors":["체육학전공","레저스포츠전공","운동건강관리전공"]}],"majors":[]},{"name":"디자인앤아트대학","departments":[{"name":"조형예술학부","majors":["회화전공(서양화, 한국화)","조소전공"]},{"name":"디자인학부","majors":["커뮤니케이션디자인전공","패션디자인전공","공예디자인전공"]}],"majors":[]},{"name":"음악테크놀로지대학","departments":[{"name":"아트앤테크놀로지작곡과","majors":[]},{"name":"성악과","majors":[]},{"name":"피아노과","majors":[]},{"name":"관현악과","majors":[]},{"name":"국악과","majors":[]}],"majors":[]},{"name":"문화예술융합대학","departments":[{"name":"아트앤엔터테인먼트학부","majors":["영화예술전공","연기예술전공","디지털콘텐츠전공"]}],"majors":[]}]};
+
 function _populateSignupDept() {
   const sel = document.getElementById('suDept');
-  if (!sel || !_UNI_TREE?.colleges?.length) return;
+  if (!sel) return;
+  const tree = (_UNI_TREE?.colleges?.length) ? _UNI_TREE : _FALLBACK_UNI_TREE;
   const prev = sel.value;
-  sel.innerHTML = '';
-  for (const college of _UNI_TREE.colleges) {
+  sel.innerHTML = '<option value="" disabled selected>학과/전공 선택</option>';
+  for (const college of tree.colleges) {
     if (college.departments.length === 0) {
       const grp = document.createElement('optgroup');
       grp.label = college.name;
@@ -31840,9 +31843,9 @@ async function _updateServerBar() {
 }
 
 window._refreshAuth = function() {
-  ['loginId','loginStu','loginPw','suId','suStu','suName','suPw','suPw2'].forEach(id => {
+  ['suId','suStu','suName','suPw','suPw2'].forEach(id => {
     const el = document.getElementById(id);
-    if (el && id.startsWith('login') === false && id !== 'loginId' && id !== 'loginStu') el.value = '';
+    if (el) el.value = '';
   });
   showAuthMsg('loginMsg', '');
   showAuthMsg('suMsg', '');
