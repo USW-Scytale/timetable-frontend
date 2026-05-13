@@ -6062,6 +6062,12 @@ footer strong { color: var(--text-dark); font-weight: 600; }
 
 <div class="content">
 
+  <!-- 로그인 안내 배너 (비로그인 시 표시) -->
+  <div id="gradLoginBanner" style="display:none;background:var(--blue-bg);border:1px solid var(--blue-mid);border-radius:12px;padding:14px 18px;margin-bottom:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <div style="font-size:13px;color:var(--blue);font-weight:700;">🔒 로그인하면 내 학번·전공 기준 졸업요건과 맞춤 추천을 볼 수 있어요</div>
+    <a href="#/auth" style="padding:6px 16px;background:var(--blue);color:#fff;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">로그인</a>
+  </div>
+
   <!-- 📚 내 학번-전공 졸업요건 (학점배정표 기반) -->
   <div id="gradReqBreakdownCard" style="background:linear-gradient(135deg,var(--blue-bg),var(--bg-parchment));border:1px solid var(--blue-mid);border-radius:14px;padding:18px 22px;margin-bottom:18px;display:none;">
     <div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
@@ -29976,7 +29982,7 @@ const ROUTE_MAP = {
 };
 
 /* 인증이 필요 없는 라우트 (로그인 안 해도 접근 가능) */
-const PUBLIC_ROUTES = new Set(['auth']);
+const PUBLIC_ROUTES = new Set(['auth', 'graduation']);
 
 function navigate() {
   const hash  = location.hash || '#/';
@@ -31238,6 +31244,10 @@ function getGradReqByStudent(admissionYear, deptOrMajor) {
 
 /* GRADUATION: re-render banner with latest student info */
 window._refreshGraduation = async function() {
+  /* 로그인 배너 표시/숨김 */
+  const loginBanner = document.getElementById('gradLoginBanner');
+  if (loginBanner) loginBanner.style.display = isAuthed() ? 'none' : 'flex';
+
   /* 저장 이력 로그 패널 렌더 */
   try { swRenderCreditLog(); } catch(e) {}
   /* 학기별 입력 패널 갱신 */
