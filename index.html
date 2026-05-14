@@ -5483,6 +5483,282 @@ footer {
   .route-index .hero { padding: 80px 20px 70px !important; }
   .route-index .hero-title { font-size: 42px !important; }
 }
+
+/* =========================================================
+   HACKATHON POLISH PACK — Service Story + Scoring UI
+========================================================= */
+.hm-section {
+  position: relative;
+  padding: 96px 24px;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(253, 224, 71, .34), transparent 26%),
+    radial-gradient(circle at 88% 16%, rgba(186, 225, 255, .52), transparent 28%),
+    #fff;
+  overflow: hidden;
+}
+.hm-inner { max-width: 1120px; margin: 0 auto; }
+.hm-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 18px;
+  background: rgba(253,224,71,.72);
+  box-shadow: 7px 7px 0 rgba(0,62,204,.10);
+  border-radius: 6px;
+  font-size: 14px; font-weight: 900;
+  transform: rotate(-1.2deg);
+  margin-bottom: 22px;
+}
+.hm-title {
+  font-size: clamp(34px, 5.6vw, 64px);
+  line-height: .98;
+  letter-spacing: -.055em;
+  font-weight: 900;
+  color: var(--text-dark);
+  margin-bottom: 18px;
+}
+.hm-title mark {
+  position: relative;
+  background: transparent;
+  color: var(--blue-vivid);
+  z-index: 1;
+}
+.hm-title mark::after {
+  content: "";
+  position: absolute; left: -3%; bottom: 5%; width: 106%; height: 38%;
+  background: rgba(186,225,255,.72);
+  z-index: -1; border-radius: 4px;
+  transform: scaleX(0); transform-origin: left;
+  animation: highlightDraw 1.15s .2s ease forwards;
+}
+@keyframes highlightDraw { to { transform: scaleX(1); } }
+.hm-lead {
+  max-width: 720px;
+  font-size: 20px;
+  line-height: 1.65;
+  color: var(--text-soft);
+  letter-spacing: -.025em;
+}
+.hm-problem-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 22px;
+  margin-top: 42px;
+}
+.hm-problem-card,
+.hm-solution-card,
+.hm-step-card,
+.hm-score-panel,
+.hm-reason-card,
+.hm-judge-card {
+  background: rgba(255,255,255,.86);
+  border: 2px solid rgba(0,62,204,.08);
+  border-radius: 30px;
+  padding: 30px;
+  box-shadow: 0 18px 45px rgba(0,62,204,.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.hm-problem-card h3,
+.hm-solution-card h3,
+.hm-step-card h3,
+.hm-score-panel h3,
+.hm-reason-card h3,
+.hm-judge-card h3 {
+  font-size: 22px;
+  letter-spacing: -.035em;
+  margin-bottom: 18px;
+  color: var(--text-dark);
+}
+.hm-list { display: flex; flex-direction: column; gap: 12px; }
+.hm-list li {
+  list-style: none;
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 16px; line-height: 1.55; color: var(--text-soft);
+}
+.hm-list li::before {
+  content: "";
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--blue-vivid);
+  box-shadow: 0 0 0 6px rgba(0,82,255,.09);
+  margin-top: 8px; flex: 0 0 auto;
+}
+.hm-solution-card {
+  background: linear-gradient(135deg, #003ecc, #0052ff);
+  color: white;
+  border: 0;
+  overflow: hidden;
+}
+.hm-solution-card h3,
+.hm-solution-card .hm-list li { color: #fff; }
+.hm-solution-card .hm-list li::before { background: var(--yellow-main); box-shadow: 0 0 0 6px rgba(253,224,71,.18); }
+.hm-solution-badge {
+  display:inline-flex; padding: 7px 14px; border-radius: 999px;
+  background: rgba(253,224,71,.95); color: #001a33;
+  font-size: 13px; font-weight: 900;
+  margin-bottom: 16px;
+}
+.hm-workflow {
+  padding: 96px 24px;
+  background: #f8faff;
+}
+.hm-workflow-head {
+  max-width: 1120px; margin: 0 auto 28px;
+  display: flex; justify-content: space-between; gap: 24px; align-items: end;
+}
+.hm-workflow-head h2 {
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1.08;
+  letter-spacing: -.05em;
+  font-weight: 900;
+}
+.hm-workflow-head p { max-width: 440px; color: var(--text-soft); line-height: 1.6; }
+.hm-steps {
+  max-width: 1120px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+}
+.hm-step-card { padding: 24px; min-height: 220px; transition: transform .25s ease, box-shadow .25s ease; }
+.hm-step-card:hover { transform: translateY(-8px); box-shadow: 0 22px 55px rgba(0,62,204,.13); }
+.hm-step-num {
+  display: inline-grid; place-items: center;
+  width: 38px; height: 38px; border-radius: 13px;
+  background: var(--yellow-main);
+  box-shadow: 5px 5px 0 var(--yellow-dark);
+  font-size: 17px; font-weight: 900;
+  margin-bottom: 22px;
+}
+.hm-step-card h3 { margin-bottom: 10px; }
+.hm-step-card p { color: var(--text-soft); line-height: 1.55; font-size: 15px; }
+.hm-demo-band {
+  padding: 92px 24px;
+  background: #001a33;
+  color: white;
+}
+.hm-demo-inner { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: .9fr 1.1fr; gap: 24px; align-items: center; }
+.hm-demo-copy h2 { font-size: clamp(32px, 4vw, 54px); line-height: 1; letter-spacing: -.055em; margin-bottom: 18px; }
+.hm-demo-copy p { color: rgba(255,255,255,.72); line-height: 1.65; font-size: 18px; }
+.hm-demo-copy strong { color: var(--yellow-main); }
+.hm-mini-score {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 32px;
+  padding: 28px;
+  box-shadow: 0 24px 70px rgba(0,0,0,.25);
+}
+.hm-score-top { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+.hm-score-number { font-size: 68px; line-height: .85; font-weight: 900; letter-spacing: -.06em; color: var(--yellow-main); }
+.hm-score-label { color: rgba(255,255,255,.70); font-weight: 700; }
+.hm-chip {
+  display:inline-flex; align-items:center; padding: 5px 10px;
+  border-radius:999px; background: rgba(253,224,71,.75); color:#001a33; font-weight:900; font-size:12px;
+}
+.hm-meter { margin: 16px 0; }
+.hm-meter-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: rgba(255,255,255,.82); }
+.hm-meter-track { height: 12px; border-radius: 999px; background: rgba(255,255,255,.12); overflow: hidden; }
+.hm-meter-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--yellow-main), #fff6a3); transform-origin:left; animation: growBar .9s ease forwards; }
+@keyframes growBar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* Result-page competition summary */
+.route-result .hm-result-summary {
+  max-width: 1180px;
+  margin: 18px auto 22px;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: .95fr 1.05fr;
+  gap: 18px;
+}
+.route-result .hm-score-panel,
+.route-result .hm-reason-card { padding: 24px; }
+.route-result .hm-score-panel { background: #001a33; color: #fff; border: none; }
+.route-result .hm-score-panel h3,
+.route-result .hm-score-panel .hm-score-label { color: #fff; }
+.route-result .hm-score-panel .hm-score-number { color: var(--yellow-main); }
+.route-result .hm-result-pill {
+  display:inline-flex; align-items:center; gap:7px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: rgba(253,224,71,.95);
+  color: #001a33;
+  font-weight: 900;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+.route-result .hm-reasons { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.route-result .hm-reason-item {
+  padding: 13px 14px;
+  border-radius: 16px;
+  background: #f8faff;
+  border: 1px solid rgba(0,82,255,.08);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+.route-result .hm-reason-item strong { display:block; color: var(--text-dark); margin-bottom: 2px; font-weight: 900; }
+.route-result .hm-compare-polish {
+  max-width: 1180px;
+  margin: 0 auto 22px;
+  padding: 0 24px;
+}
+.route-result .hm-compare-card {
+  background: #fff;
+  border: 2px solid rgba(0,82,255,.08);
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 18px 45px rgba(0,62,204,.07);
+}
+.route-result .hm-compare-head {
+  padding: 22px 24px;
+  display:flex; justify-content:space-between; gap:16px; align-items:center;
+  border-bottom: 1px solid var(--border);
+}
+.route-result .hm-compare-head h3 { font-size: 22px; letter-spacing:-.035em; }
+.route-result .hm-compare-head span { color: var(--text-soft); font-size: 14px; }
+.route-result .hm-compare-table { width:100%; border-collapse: collapse; font-size: 14px; }
+.route-result .hm-compare-table th,
+.route-result .hm-compare-table td { padding: 15px 18px; text-align:left; border-bottom:1px solid var(--border); }
+.route-result .hm-compare-table th { background: #f8faff; font-weight:900; color: var(--text-dark); }
+.route-result .hm-compare-table td:not(:first-child) { font-weight: 800; }
+.route-result .hm-best { color: var(--blue-vivid); }
+
+/* Dark mode for hackathon polish pack */
+[data-theme="dark"] .hm-section { background: radial-gradient(circle at 12% 18%, rgba(253, 224, 71, .12), transparent 26%), radial-gradient(circle at 88% 16%, rgba(41,151,255,.20), transparent 28%), var(--bg); }
+[data-theme="dark"] .hm-workflow { background: var(--bg); }
+[data-theme="dark"] .hm-problem-card,
+[data-theme="dark"] .hm-step-card,
+[data-theme="dark"] .hm-reason-card,
+[data-theme="dark"] .route-result .hm-compare-card { background: var(--bg-parchment); border-color: var(--border); }
+[data-theme="dark"] .route-result .hm-reason-item,
+[data-theme="dark"] .route-result .hm-compare-table th { background: var(--tile-1); }
+[data-theme="dark"] .hm-demo-band,
+[data-theme="dark"] .route-result .hm-score-panel { background: #000; }
+[data-theme="dark"] .hm-title,
+[data-theme="dark"] .hm-workflow-head h2 { color: var(--text-dark); }
+[data-theme="dark"] .hm-lead,
+[data-theme="dark"] .hm-workflow-head p,
+[data-theme="dark"] .hm-step-card p,
+[data-theme="dark"] .hm-list li { color: var(--text-soft); }
+[data-theme="dark"] .hm-problem-card h3,
+[data-theme="dark"] .hm-step-card h3 { color: var(--text-dark); }
+[data-theme="dark"] .hm-score-panel .hm-meter-row { color: rgba(255,255,255,.82); }
+[data-theme="dark"] .route-result .hm-reason-item { color: var(--text-soft); }
+[data-theme="dark"] .route-result .hm-reason-item strong { color: var(--text-dark); }
+[data-theme="dark"] .route-result .hm-compare-table td { color: var(--text-dark); }
+
+/* Responsive — hackathon sections */
+@media (max-width: 900px) {
+  .hm-problem-grid,
+  .hm-demo-inner,
+  .route-result .hm-result-summary { grid-template-columns: 1fr; }
+  .hm-steps { grid-template-columns: 1fr 1fr; }
+  .hm-workflow-head { display:block; }
+  .hm-workflow-head p { margin-top: 14px; }
+}
+@media (max-width: 620px) {
+  .hm-section, .hm-workflow, .hm-demo-band { padding: 64px 18px; }
+  .hm-steps { grid-template-columns: 1fr; }
+  .route-result .hm-reasons { grid-template-columns: 1fr; }
+  .route-result .hm-compare-card { overflow-x:auto; }
+  .hm-score-number { font-size: 54px; }
+}
   </style>
 
   <style id="suwonmate-motion-ui">
@@ -6118,6 +6394,67 @@ textarea:focus {
     </a>
 
   </section>
+
+  <!-- ── Hackathon Story Section ── -->
+  <section class="hm-section">
+    <div class="hm-inner">
+      <div class="hm-eyebrow">학교 대회 제출용 핵심 컨셉</div>
+      <h2 class="hm-title">수강신청의 복잡함을<br><mark>졸업요건 기반 추천</mark>으로 해결합니다</h2>
+      <p class="hm-lead">수원대생이 시간표를 짤 때 겪는 문제는 단순히 수업 시간이 겹치지 않게 고르는 것이 아닙니다. 학과별 졸업요건, 전공·교양 이수 학점, 공강 선호, 통학 시간, 이동거리까지 동시에 고려해야 합니다.</p>
+
+      <div class="hm-problem-grid">
+        <div class="hm-problem-card">
+          <h3>기존 방식의 문제</h3>
+          <ul class="hm-list">
+            <li>졸업요건을 직접 확인하며 부족한 학점을 계산해야 합니다.</li>
+            <li>공강·시간대·이동거리 조건을 동시에 만족하는 조합을 찾기 어렵습니다.</li>
+            <li>추천 결과가 왜 좋은지 판단할 기준이 부족합니다.</li>
+          </ul>
+        </div>
+        <div class="hm-solution-card">
+          <div class="hm-solution-badge">suwonmate Solution</div>
+          <h3>서비스의 해결 방식</h3>
+          <ul class="hm-list">
+            <li>학생 정보와 학과 기준을 바탕으로 졸업요건 충족 여부를 먼저 분석합니다.</li>
+            <li>선호 조건을 반영해 여러 개의 시간표 후보를 자동 생성합니다.</li>
+            <li>추천 이유와 적합도 점수를 함께 보여주어 선택 근거를 제공합니다.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Workflow Section ── -->
+  <section class="hm-workflow">
+    <div class="hm-workflow-head">
+      <h2>사용자는 4단계만 거치면 됩니다</h2>
+      <p>심사위원이 기능 흐름을 바로 이해할 수 있도록, 입력부터 저장까지의 과정을 서비스 플로우로 정리했습니다.</p>
+    </div>
+    <div class="hm-steps">
+      <div class="hm-step-card"><div class="hm-step-num">1</div><h3>학생 정보 입력</h3><p>학번, 학과, 이수 학점 정보를 기준으로 개인화 분석을 시작합니다.</p></div>
+      <div class="hm-step-card"><div class="hm-step-num">2</div><h3>선호 조건 선택</h3><p>공강 요일, 오전·오후 선호, 이동거리 조건을 필터로 설정합니다.</p></div>
+      <div class="hm-step-card"><div class="hm-step-num">3</div><h3>추천안 비교</h3><p>여러 시간표 후보의 학점, 공강, 이동 효율, 추천도를 한눈에 비교합니다.</p></div>
+      <div class="hm-step-card"><div class="hm-step-num">4</div><h3>저장 및 활용</h3><p>마음에 드는 시간표를 저장하고 학사일정, 빈 강의실 기능과 함께 사용합니다.</p></div>
+    </div>
+  </section>
+
+  <!-- ── Scoring Demo Section ── -->
+  <section class="hm-demo-band">
+    <div class="hm-demo-inner">
+      <div class="hm-demo-copy">
+        <h2>추천 결과는<br><strong>점수와 이유</strong>로 설명합니다</h2>
+        <p>단순히 시간표를 보여주는 것에서 끝나지 않고, 왜 이 시간표가 적합한지 정량적 지표와 문장형 근거를 함께 제공합니다.</p>
+      </div>
+      <div class="hm-mini-score">
+        <div class="hm-score-top"><div><div class="hm-score-label">시간표 적합도</div><div class="hm-score-number">92</div></div><div class="hm-chip">추천안 A</div></div>
+        <div class="hm-meter"><div class="hm-meter-row"><span>공강 만족도</span><strong>95%</strong></div><div class="hm-meter-track"><div class="hm-meter-fill" style="width:95%"></div></div></div>
+        <div class="hm-meter"><div class="hm-meter-row"><span>졸업요건 충족</span><strong>100%</strong></div><div class="hm-meter-track"><div class="hm-meter-fill" style="width:100%"></div></div></div>
+        <div class="hm-meter"><div class="hm-meter-row"><span>이동거리 효율</span><strong>88%</strong></div><div class="hm-meter-track"><div class="hm-meter-fill" style="width:88%"></div></div></div>
+        <div class="hm-meter"><div class="hm-meter-row"><span>시간대 선호</span><strong>84%</strong></div><div class="hm-meter-track"><div class="hm-meter-fill" style="width:84%"></div></div></div>
+      </div>
+    </div>
+  </section>
+
 
   <!-- ── Feature Cards ── -->
   <section class="cards-section">
@@ -6781,6 +7118,50 @@ textarea:focus {
       <button class="ctb-btn" onclick="setTarget(21)">21학점</button>
     </div>
     <span class="ctb-hint" id="ctbHint"></span>
+  </div>
+</div>
+
+<div class="hm-result-summary">
+  <div class="hm-score-panel">
+    <div class="hm-result-pill">🏆 현재 추천안</div>
+    <div class="hm-score-top">
+      <div>
+        <div class="hm-score-label">시간표 적합도</div>
+        <div class="hm-score-number">92</div>
+      </div>
+      <div class="hm-chip">Best Match</div>
+    </div>
+    <div class="hm-meter"><div class="hm-meter-row"><span>공강 만족도</span><strong>95%</strong></div><div class="hm-meter-track"><div class="hm-meter-fill" style="width:95%"></div></div></div>
+    <div class="hm-meter"><div class="hm-meter-row"><span>졸업요건 충족</span><strong>100%</strong></div><div class="hm-meter-track"><div class="hm-meter-fill" style="width:100%"></div></div></div>
+    <div class="hm-meter"><div class="hm-meter-row"><span>이동거리 효율</span><strong>88%</strong></div><div class="hm-meter-track"><div class="hm-meter-fill" style="width:88%"></div></div></div>
+    <div class="hm-meter"><div class="hm-meter-row"><span>시간대 선호</span><strong>84%</strong></div><div class="hm-meter-track"><div class="hm-meter-fill" style="width:84%"></div></div></div>
+  </div>
+  <div class="hm-reason-card">
+    <h3>추천 이유</h3>
+    <div class="hm-reasons">
+      <div class="hm-reason-item"><strong>공강 조건 반영</strong>선택한 공강 요일 조건을 우선 반영했습니다.</div>
+      <div class="hm-reason-item"><strong>졸업요건 고려</strong>전공필수·교양 영역을 함께 포함했습니다.</div>
+      <div class="hm-reason-item"><strong>이동 동선 최소화</strong>연속 수업 간 강의실 이동 부담을 낮췄습니다.</div>
+      <div class="hm-reason-item"><strong>비교 가능 설계</strong>3가지 추천안을 점수와 조건으로 비교할 수 있습니다.</div>
+    </div>
+  </div>
+</div>
+
+<div class="hm-compare-polish">
+  <div class="hm-compare-card">
+    <div class="hm-compare-head">
+      <div><h3>추천안 비교 요약</h3><span>추천 알고리즘의 판단 기준을 보여주는 영역입니다.</span></div>
+      <span class="hm-chip">정량 비교</span>
+    </div>
+    <table class="hm-compare-table">
+      <thead><tr><th>평가 항목</th><th>추천안 A</th><th>추천안 B</th><th>추천안 C</th></tr></thead>
+      <tbody>
+        <tr><td>추천도</td><td class="hm-best">92점</td><td>86점</td><td>78점</td></tr>
+        <tr><td>공강</td><td class="hm-best">화·금 공강</td><td>월·금 공강</td><td>수요일 공강</td></tr>
+        <tr><td>총 학점</td><td>18학점</td><td>15학점</td><td>21학점</td></tr>
+        <tr><td>이동거리</td><td class="hm-best">짧음</td><td>보통</td><td>김</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
