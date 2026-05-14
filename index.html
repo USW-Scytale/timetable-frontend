@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>수원대 스마트 시간표</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
   <!-- 🌙 테마 — body 렌더 전 즉시 적용해서 깜빡임 방지 -->
@@ -5020,6 +5020,870 @@ footer strong { color: var(--text-dark); font-weight: 600; }
 }
 
   </style>
+
+  <style id="suwonmate-ui-refresh">
+/* =====================================================================
+   SUWONMATE UI REFRESH — yellow highlighter + vivid blue system
+   Keeps original HTML/JS structure, restyles fonts/colors/components.
+===================================================================== */
+:root {
+  --blue-deep:     #003ecc;
+  --blue-vivid:    #0052ff;
+  --yellow-main:   #FDE047;
+  --yellow-light:  rgba(253, 224, 71, 0.72);
+  --yellow-dark:   #EAB308;
+  --light-sky:     rgba(186, 225, 255, 0.62);
+  --text-dark:     #001a33;
+  --text-mid:      #1a3558;
+  --text-soft:     #575757;
+  --text-muted:    #7b8494;
+  --bg:            #ffffff;
+  --white:         #ffffff;
+  --bg-parchment:  #F8FAFF;
+  --pearl:         #FBFCFF;
+  --border:        #E2E8F0;
+  --border-h:      rgba(0, 62, 204, .18);
+  --border-hover:  rgba(0, 82, 255, .32);
+  --divider:       #E2E8F0;
+  --blue:          var(--blue-vivid);
+  --blue-dark:     var(--blue-deep);
+  --blue-focus:    var(--blue-vivid);
+  --blue-on-dark:  #BAE1FF;
+  --blue-bg:       rgba(0, 82, 255, .08);
+  --blue-mid:      rgba(0, 82, 255, .20);
+  --blue-ring:     rgba(0, 82, 255, .28);
+  --tile-1:        #001a33;
+  --tile-2:        #052a63;
+  --tile-3:        #003ecc;
+  --on-dark:       #ffffff;
+  --on-dark-muted: rgba(255,255,255,.72);
+  --green:         #20A66B;
+  --green-bg:      rgba(32, 166, 107, .10);
+  --green-mid:     rgba(32, 166, 107, .24);
+  --red:           #D92E44;
+  --red-bg:        rgba(217, 46, 68, .09);
+  --red-mid:       rgba(217, 46, 68, .22);
+  --amber:         #B6802B;
+  --amber-bg:      rgba(253, 224, 71, .24);
+  --c1: #0052ff;
+  --c2: #7C3AED;
+  --c3: #20A66B;
+  --c4: #EAB308;
+  --c5: #D9468B;
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 32px;
+  --r-pill: 9999px;
+  --radius-card: 32px;
+  --r-card: 32px;
+  --shadow-sm: 0 8px 24px rgba(0, 62, 204, .08);
+  --shadow-md: 0 18px 48px rgba(0, 62, 204, .12);
+  --shadow-product: 0 18px 50px rgba(0, 62, 204, .14);
+}
+
+[data-theme="dark"] {
+  --blue-deep: #7CB8FF;
+  --blue-vivid: #7CB8FF;
+  --yellow-main: #FDE047;
+  --yellow-light: rgba(253, 224, 71, .26);
+  --yellow-dark: #D6A507;
+  --light-sky: rgba(0, 82, 255, .24);
+  --bg: #071326;
+  --white: #0B1730;
+  --bg-parchment: #0F1E38;
+  --pearl: #101F3C;
+  --text-dark: #F8FAFF;
+  --text-mid: #DDEBFF;
+  --text-soft: #B8C3D6;
+  --text-muted: #8FA0BA;
+  --border: rgba(255,255,255,.12);
+  --border-h: rgba(255,255,255,.22);
+  --border-hover: rgba(253,224,71,.34);
+  --blue: #7CB8FF;
+  --blue-dark: #A5CFFF;
+  --blue-focus: #A5CFFF;
+  --blue-on-dark: #FDE047;
+  --blue-bg: rgba(124,184,255,.16);
+  --blue-mid: rgba(124,184,255,.32);
+  --blue-ring: rgba(124,184,255,.36);
+  --tile-1: #081325;
+  --tile-2: #11264A;
+  --tile-3: #17376F;
+}
+
+body {
+  font-family: 'Bricolage Grotesque', 'Noto Sans KR', system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
+  background:
+    radial-gradient(circle at 15% -10%, rgba(253,224,71,.22), transparent 34%),
+    radial-gradient(circle at 88% 4%, rgba(0,82,255,.13), transparent 34%),
+    var(--bg) !important;
+  color: var(--text-dark) !important;
+  letter-spacing: -0.03em;
+}
+
+.navbar {
+  background: rgba(255,255,255,.86) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  border-bottom: 1px solid rgba(0,62,204,.07) !important;
+}
+[data-theme="dark"] .navbar { background: rgba(7,19,38,.82) !important; }
+
+.navbar-inner { height: 70px !important; }
+.logo { gap: 12px !important; }
+.logo-mark,
+.route-auth .auth-logo-mark {
+  width: 38px !important;
+  height: 38px !important;
+  background: var(--yellow-main) !important;
+  border-radius: 10px !important;
+  box-shadow: 5px 5px 0 rgba(0,62,204,.10) !important;
+}
+.logo-mark svg,
+.route-auth .auth-logo-mark svg {
+  width: 22px !important;
+  height: 22px !important;
+  stroke: var(--text-dark) !important;
+  stroke-width: 2.5 !important;
+}
+.logo-label,
+.logo-text,
+.route-auth .auth-logo-label {
+  font-size: 24px !important;
+  font-weight: 800 !important;
+  letter-spacing: -1.2px !important;
+  color: var(--text-dark) !important;
+}
+
+.nav-links { gap: 24px !important; }
+.nav-links a {
+  font-weight: 700 !important;
+  color: var(--text-soft) !important;
+}
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--blue-deep) !important;
+  opacity: 1 !important;
+}
+.nav-cta,
+.route-index .cta-btn,
+.route-input .btn-next,
+.route-option .btn-next,
+.route-index .week-btn,
+.route-index .dd-add-btn,
+.route-mytimetable .btn-primary-set,
+.route-auth .auth-submit,
+.btn-save,
+button.primary,
+button[class*="primary"] {
+  background: var(--yellow-main) !important;
+  color: var(--text-dark) !important;
+  border: 0 !important;
+  border-radius: var(--r-lg) !important;
+  font-weight: 800 !important;
+  box-shadow: 0 6px 0 var(--yellow-dark) !important;
+  transition: transform .22s cubic-bezier(.18,.89,.32,1.28), box-shadow .22s !important;
+}
+.nav-cta:hover,
+.route-index .cta-btn:hover,
+.route-input .btn-next:hover,
+.route-option .btn-next:hover,
+.route-index .week-btn:hover,
+.route-index .dd-add-btn:hover,
+.route-auth .auth-submit:hover,
+.btn-save:hover,
+button.primary:hover,
+button[class*="primary"]:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 9px 0 var(--yellow-dark) !important;
+}
+.nav-cta:active,
+.route-index .cta-btn:active,
+.route-input .btn-next:active,
+.route-option .btn-next:active,
+.route-index .week-btn:active,
+.route-index .dd-add-btn:active,
+.route-auth .auth-submit:active,
+.btn-save:active,
+button.primary:active,
+button[class*="primary"]:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 2px 0 var(--yellow-dark) !important;
+}
+
+.route-index .hero {
+  background: transparent !important;
+  padding: 120px 24px 100px !important;
+}
+.route-index .hero-badge {
+  display: inline-block !important;
+  background: var(--yellow-light) !important;
+  color: var(--text-dark) !important;
+  border-radius: 4px !important;
+  padding: 8px 24px !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  transform: rotate(-1.5deg) !important;
+  box-shadow: 6px 6px 0 rgba(0,62,204,.10) !important;
+}
+.route-index .hero-badge-dot { display: none !important; }
+.route-index .hero-title,
+.route-input .page-title,
+.route-option .page-title,
+.route-result .page-title,
+[class*="page-title"],
+[class*="section-title"] {
+  font-weight: 800 !important;
+  letter-spacing: -0.055em !important;
+  color: var(--text-dark) !important;
+}
+.route-index .hero-title {
+  font-size: clamp(48px, 9vw, 92px) !important;
+  line-height: .95 !important;
+}
+.route-index .hero-title .accent,
+.accent {
+  color: var(--blue-vivid) !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+.route-index .hero-title .accent::after,
+.accent::after {
+  content: '' !important;
+  position: absolute !important;
+  left: -2% !important;
+  bottom: 8% !important;
+  width: 104% !important;
+  height: 35% !important;
+  background: var(--light-sky) !important;
+  z-index: -1 !important;
+  border-radius: 2px !important;
+}
+.route-index .hero-sub,
+.route-input .page-sub,
+.route-option .page-sub {
+  color: var(--text-soft) !important;
+  font-weight: 500 !important;
+}
+.route-index .hero-sub strong { color: var(--text-dark) !important; font-weight: 800 !important; }
+
+.route-index .week-card,
+.route-index .dd-card,
+.route-input .card,
+.route-option .card,
+.route-auth .auth-card,
+.route-result .tt-card,
+.route-mytimetable .mt-card,
+.route-mytimetable .mt-empty,
+[class*="-card"]:not(.route-index .card),
+[class*="-panel"] {
+  border-radius: var(--r-lg) !important;
+  border: 2px solid var(--border) !important;
+  background: rgba(255,255,255,.92) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+[data-theme="dark"] .route-index .week-card,
+[data-theme="dark"] .route-index .dd-card,
+[data-theme="dark"] .route-input .card,
+[data-theme="dark"] .route-option .card,
+[data-theme="dark"] .route-auth .auth-card,
+[data-theme="dark"] .route-result .tt-card,
+[data-theme="dark"] .route-mytimetable .mt-card,
+[data-theme="dark"] .route-mytimetable .mt-empty,
+[data-theme="dark"] [class*="-card"]:not(.route-index .card),
+[data-theme="dark"] [class*="-panel"] {
+  background: rgba(15,30,56,.92) !important;
+}
+
+.route-input .card-title-text,
+.route-option .card-title-text,
+.route-index .week-head-title,
+.route-index .dd-head-title,
+.route-auth .auth-title {
+  font-weight: 800 !important;
+  color: var(--blue-deep) !important;
+}
+.route-input .card-icon,
+.route-option .card-icon,
+.route-index .week-head-icon,
+.route-index .dd-head-icon,
+.route-index .dd-head-icon.auto,
+.route-index .dd-head-icon.user {
+  background: var(--yellow-light) !important;
+  color: var(--text-dark) !important;
+  border-radius: 14px !important;
+  box-shadow: 4px 4px 0 rgba(0,62,204,.08) !important;
+}
+
+.route-input .btn-back,
+.route-option .btn-back,
+.route-index .week-btn.ghost,
+.route-index .dd-add-btn.ghost,
+.btn-back,
+.btn-ghost,
+button.ghost,
+button.secondary,
+[class*="secondary"] {
+  background: transparent !important;
+  color: var(--text-soft) !important;
+  border: 2px solid var(--border) !important;
+  border-radius: var(--r-md) !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+}
+.route-input .btn-back:hover,
+.route-option .btn-back:hover,
+.route-index .week-btn.ghost:hover,
+.route-index .dd-add-btn.ghost:hover,
+.btn-back:hover,
+.btn-ghost:hover,
+button.ghost:hover,
+button.secondary:hover,
+[class*="secondary"]:hover {
+  background: var(--bg-parchment) !important;
+  color: var(--blue-deep) !important;
+  border-color: var(--blue-deep) !important;
+}
+
+.route-input .step.active .step-circle,
+.route-option .step.active .step-circle,
+.route-result .step-circle.active,
+.step.active .step-circle {
+  background: var(--blue-vivid) !important;
+  color: #fff !important;
+  border-color: var(--blue-vivid) !important;
+  box-shadow: 0 8px 20px rgba(0,82,255,.20) !important;
+}
+.route-input .step.done .step-circle,
+.route-option .step.done .step-circle,
+.step.done .step-circle {
+  background: var(--yellow-main) !important;
+  color: var(--text-dark) !important;
+  border-color: var(--yellow-main) !important;
+}
+
+input, select, textarea,
+.route-auth .auth-field input,
+.route-input select,
+.route-input input[type="text"],
+.route-input input[type="number"],
+.route-input input[type="time"],
+.route-input input[type="date"],
+.route-option select,
+.route-option input[type="text"],
+.route-option input[type="number"],
+.route-option input[type="time"] {
+  border: 2px solid var(--border) !important;
+  border-radius: var(--r-md) !important;
+  background: var(--white) !important;
+  color: var(--text-dark) !important;
+  font-weight: 600 !important;
+}
+input:focus, select:focus, textarea:focus,
+.route-auth .auth-field input:focus {
+  border-color: var(--blue-vivid) !important;
+  box-shadow: 0 0 0 4px rgba(0,82,255,.13) !important;
+  outline: none !important;
+}
+
+.route-option .radio-option,
+.route-input .radio-option,
+.route-option .interest-card,
+.route-input .credit-card,
+.route-result .plan-tab,
+.route-result .ctb-btn,
+.opt-btn {
+  border: 2px solid var(--border) !important;
+  border-radius: 16px !important;
+  background: var(--white) !important;
+  color: var(--text-soft) !important;
+  font-weight: 800 !important;
+  transition: all .2s !important;
+}
+.route-option .radio-option:hover,
+.route-input .radio-option:hover,
+.route-option .interest-card:hover,
+.route-input .credit-card:hover,
+.route-result .plan-tab:hover,
+.route-result .ctb-btn:hover,
+.opt-btn:hover {
+  border-color: var(--blue-vivid) !important;
+  transform: translateY(-2px) !important;
+}
+.route-option .radio-option:has(input:checked),
+.route-input .radio-option:has(input:checked),
+.route-option .interest-card.active,
+.route-input .credit-card.active,
+.route-result .plan-tab.active,
+.route-result .ctb-btn.active,
+.opt-btn.active {
+  background: var(--blue-vivid) !important;
+  color: #fff !important;
+  border-color: var(--blue-vivid) !important;
+  box-shadow: 0 8px 20px rgba(0,82,255,.20) !important;
+}
+
+.route-index .cards-section {
+  background: var(--tile-1) !important;
+  color: var(--on-dark) !important;
+}
+.route-index .cards-label,
+.route-index .card-tag {
+  color: var(--yellow-main) !important;
+}
+.route-index .cards-heading {
+  color: #fff !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.045em !important;
+}
+.route-index .card {
+  background: var(--tile-2) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: var(--r-lg) !important;
+  box-shadow: none !important;
+}
+.route-index .card-icon-wrap {
+  background: rgba(253,224,71,.16) !important;
+  color: var(--yellow-main) !important;
+}
+.route-index .card-title { font-weight: 800 !important; }
+.route-index .card-tag { background: rgba(253,224,71,.14) !important; }
+
+.route-index .week-grid,
+.route-index .wd-day-col,
+.route-index .dd-item,
+.route-result .tt-grid,
+.route-result .tt-empty-cell,
+.route-result .tt-cell {
+  border-color: var(--border) !important;
+}
+.route-index .wd-head,
+.route-index .wd-time-col,
+.route-result .tt-head-cell,
+.route-result .tt-time-cell {
+  background: var(--bg-parchment) !important;
+  color: var(--text-dark) !important;
+  font-weight: 800 !important;
+}
+.route-index .wd-class {
+  border-radius: 14px !important;
+  font-weight: 800 !important;
+}
+.route-index .wd-class.c1 { background: rgba(0,82,255,.10) !important; color: var(--blue-vivid) !important; border-left-color: var(--blue-vivid) !important; }
+.route-index .wd-class.c4 { background: rgba(253,224,71,.26) !important; color: #8A6100 !important; border-left-color: var(--yellow-dark) !important; }
+
+footer {
+  background: var(--bg-parchment) !important;
+  border-top: 1px solid var(--border) !important;
+  color: var(--text-soft) !important;
+}
+
+@media (max-width: 600px) {
+  .navbar-inner { height: 62px !important; }
+  .route-index .hero { padding: 80px 20px 70px !important; }
+  .route-index .hero-title { font-size: 42px !important; }
+}
+  </style>
+
+  <style id="suwonmate-motion-ui">
+/* =====================================================================
+   SUWONMATE MOTION UI ADD-ON
+   - 버튼 반짝임
+   - 제목 형광펜 애니메이션
+   - 카드 hover 상승
+   - 배지 둥둥 효과
+   - 페이지 fade-in
+   - 접근성: prefers-reduced-motion 대응
+===================================================================== */
+
+/* 전체 페이지/라우트 등장 애니메이션 */
+.route.active {
+  animation: suwonPageFade 0.45s ease-out both;
+}
+
+@keyframes suwonPageFade {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 메인 제목 강조 형광펜 효과 */
+.hero-title .accent,
+.route-index .hero-title .accent,
+.page-title .accent,
+.card-title-text .accent,
+.cards-heading .accent {
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+  color: var(--blue-vivid, var(--blue));
+}
+
+.hero-title .accent::after,
+.route-index .hero-title .accent::after,
+.page-title .accent::after,
+.card-title-text .accent::after,
+.cards-heading .accent::after {
+  content: "";
+  position: absolute;
+  left: -3%;
+  bottom: 6%;
+  width: 106%;
+  height: 38%;
+  background: var(--light-sky, rgba(186, 225, 255, 0.6));
+  z-index: -1;
+  transform: scaleX(0);
+  transform-origin: left;
+  border-radius: 3px;
+  animation: suwonHighlightDraw 1.15s cubic-bezier(0.23, 1, 0.32, 1) 0.15s forwards;
+}
+
+@keyframes suwonHighlightDraw {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* 배지 둥둥 떠 있는 효과 */
+.hero-badge,
+.route-index .hero-badge,
+.card-tag,
+.dd-badge,
+.meta-tag,
+.mt-tag {
+  animation: suwonBadgeFloat 2.8s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes suwonBadgeFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(-1deg);
+  }
+}
+
+/* CTA 버튼: 노랑 버튼 + 빛 지나가는 반짝임 */
+.btn-cta,
+.cta-btn,
+.nav-cta,
+.auth-submit,
+.week-btn,
+.dd-add-btn,
+.grade-btn.primary,
+.btn-save,
+button[onclick*="result"],
+button[onclick*="save"],
+button[onclick*="create"],
+button[onclick*="generate"] {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    box-shadow 0.22s ease,
+    background-color 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.btn-cta::after,
+.cta-btn::after,
+.nav-cta::after,
+.auth-submit::after,
+.week-btn::after,
+.dd-add-btn::after,
+.grade-btn.primary::after,
+.btn-save::after,
+button[onclick*="result"]::after,
+button[onclick*="save"]::after,
+button[onclick*="create"]::after,
+button[onclick*="generate"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -130%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.72) 50%,
+    transparent 100%
+  );
+  transform: skewX(-22deg);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.btn-cta:hover::after,
+.cta-btn:hover::after,
+.nav-cta:hover::after,
+.auth-submit:hover::after,
+.week-btn:hover::after,
+.dd-add-btn:hover::after,
+.grade-btn.primary:hover::after,
+.btn-save:hover::after,
+button[onclick*="result"]:hover::after,
+button[onclick*="save"]:hover::after,
+button[onclick*="create"]:hover::after,
+button[onclick*="generate"]:hover::after {
+  animation: suwonButtonShine 0.85s ease;
+}
+
+@keyframes suwonButtonShine {
+  from {
+    left: -130%;
+  }
+  to {
+    left: 145%;
+  }
+}
+
+/* 버튼 hover / active 감각 */
+.btn-cta:hover,
+.cta-btn:hover,
+.auth-submit:hover,
+.week-btn:hover,
+.dd-add-btn:hover,
+.grade-btn.primary:hover,
+.btn-save:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 0 var(--yellow-dark, rgba(0, 62, 204, 0.18));
+}
+
+.nav-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 var(--yellow-dark, rgba(0, 62, 204, 0.18));
+}
+
+.btn-cta:active,
+.cta-btn:active,
+.nav-cta:active,
+.auth-submit:active,
+.week-btn:active,
+.dd-add-btn:active,
+.grade-btn.primary:active,
+.btn-save:active {
+  transform: translateY(2px) scale(0.99);
+  box-shadow: 0 3px 0 var(--yellow-dark, rgba(0, 62, 204, 0.18));
+}
+
+/* 카드 hover 상승 + 부드러운 그림자 */
+.card,
+.week-card,
+.dd-card,
+.form-card,
+.auth-card,
+.tt-card,
+.mt-card,
+.room-card,
+.building-card,
+.rec-card,
+.chart-card,
+.grade-entry-panel,
+.modal-content,
+[class*="-card"],
+[class*="-panel"] {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.card:hover,
+.week-card:hover,
+.dd-card:hover,
+.form-card:hover,
+.auth-card:hover,
+.tt-card:hover,
+.mt-card:hover,
+.room-card:hover,
+.building-card:hover,
+.rec-card:hover,
+.chart-card:hover,
+.grade-entry-panel:hover,
+[class*="-card"]:hover,
+[class*="-panel"]:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 18px 38px rgba(0, 62, 204, 0.12);
+  border-color: rgba(0, 82, 255, 0.18);
+}
+
+/* 옵션 버튼/탭 선택 시 통통 튀는 피드백 */
+.opt-btn,
+.radio-option,
+.plan-tab,
+.auth-tab,
+.toggle-group label,
+.ctb-btn,
+button {
+  transition:
+    transform 0.18s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.opt-btn:hover,
+.radio-option:hover,
+.plan-tab:hover,
+.auth-tab:hover,
+.toggle-group label:hover,
+.ctb-btn:hover {
+  transform: translateY(-2px);
+}
+
+.opt-btn.active,
+.radio-option:has(input:checked),
+.plan-tab.active,
+.auth-tab.active,
+.ctb-btn.active,
+.toggle-group input:checked + label {
+  animation: suwonPop 0.22s ease-out;
+}
+
+@keyframes suwonPop {
+  0% {
+    transform: scale(0.96);
+  }
+  70% {
+    transform: scale(1.035);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 로고 마크 hover */
+.logo-mark {
+  transition: transform 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
+}
+
+.logo:hover .logo-mark {
+  transform: rotate(-5deg) scale(1.08);
+  box-shadow: 5px 5px 0 rgba(0, 62, 204, 0.12);
+}
+
+/* 시간표 과목 블록 hover */
+.wd-class,
+.tt-block,
+.mt-course-row,
+.dd-item {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.wd-class:hover,
+.tt-block:hover,
+.mt-course-row:hover,
+.dd-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px rgba(0, 62, 204, 0.12);
+  filter: saturate(1.05);
+}
+
+/* 입력창 focus를 더 또렷하게 */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--blue-vivid, var(--blue)) !important;
+  box-shadow: 0 0 0 4px rgba(0, 82, 255, 0.16) !important;
+}
+
+/* 상단 navbar 부드러운 등장 */
+.navbar {
+  animation: suwonNavDrop 0.42s ease-out both;
+}
+
+@keyframes suwonNavDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 메인 hero 요소 순차 등장 */
+.hero-badge,
+.route-index .hero-badge {
+  animation:
+    suwonHeroIn 0.55s ease-out both,
+    suwonBadgeFloat 2.8s ease-in-out 0.65s infinite;
+}
+
+.hero-title,
+.route-index .hero-title {
+  animation: suwonHeroIn 0.65s ease-out 0.08s both;
+}
+
+.hero-sub,
+.route-index .hero-sub {
+  animation: suwonHeroIn 0.65s ease-out 0.16s both;
+}
+
+.cta-btn,
+.btn-cta {
+  animation: suwonHeroIn 0.65s ease-out 0.24s both;
+}
+
+@keyframes suwonHeroIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 다크모드에서는 그림자 색상 보정 */
+[data-theme="dark"] .card:hover,
+[data-theme="dark"] .week-card:hover,
+[data-theme="dark"] .dd-card:hover,
+[data-theme="dark"] .form-card:hover,
+[data-theme="dark"] .auth-card:hover,
+[data-theme="dark"] .tt-card:hover,
+[data-theme="dark"] .mt-card:hover,
+[data-theme="dark"] [class*="-card"]:hover,
+[data-theme="dark"] [class*="-panel"]:hover {
+  box-shadow: 0 18px 38px rgba(41, 151, 255, 0.16);
+  border-color: rgba(41, 151, 255, 0.28);
+}
+
+/* 모션 최소화 설정을 켠 사용자는 애니메이션 제거 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .hero-badge,
+  .route-index .hero-badge,
+  .card-tag,
+  .dd-badge,
+  .meta-tag,
+  .mt-tag {
+    animation: none !important;
+  }
+}
+  </style>
+
 </head>
 <body>
 
