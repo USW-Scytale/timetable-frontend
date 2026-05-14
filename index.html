@@ -7,14 +7,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
-  <!-- 🌙 테마 — body 렌더 전 즉시 적용해서 깜빡임 방지 -->
+  <!-- 테마 — 라이트 모드 고정 (다크모드 제거됨) -->
   <script>
     (function () {
       try {
-        var saved = localStorage.getItem('sw_theme');
-        var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        var theme = saved || (systemDark ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.removeItem('sw_theme');
       } catch (e) {}
     })();
   </script>
@@ -2223,16 +2221,32 @@ footer strong { color: var(--text-dark); font-weight: 600; }
   gap: 8px;
   padding: 22px 14px;
   background: #fff;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-md);
   cursor: pointer;
   position: relative;
   transition: all .18s;
 }
+.route-option .plan-card:hover { border-color: var(--border-h); }
 .route-option .plan-option input:checked + .plan-card {
   border-color: var(--blue);
   background: var(--blue-bg);
+  box-shadow: 0 0 0 4px rgba(41,151,255,.14);
 }
+/* 선택된 카드에 체크 표시 — 한눈에 구분되게 */
+.route-option .plan-option input:checked + .plan-card::after {
+  content: "✓ 선택됨";
+  position: absolute;
+  top: 10px; left: 10px;
+  padding: 3px 10px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: var(--r-pill);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: -.012em;
+}
+.route-option .plan-option input:checked + .plan-card .plan-name { color: var(--blue); }
 .route-option .plan-icon { font-size: 28px; }
 .route-option .plan-name { font-size: 15px; font-weight: 600; letter-spacing: -.016em; }
 .route-option .plan-desc { font-size: 12px; color: var(--text-soft); line-height: 1.5; letter-spacing: -.012em; }
@@ -6888,6 +6902,31 @@ textarea:focus {
           </div>
         </div>
 
+        <div class="divider"></div>
+
+        <div class="field">
+          <span class="field-label">등하교 소요시간</span>
+          <span class="field-sub" style="display:block;font-size:12px;color:var(--text-muted);margin:-4px 0 8px;">집 ↔ 학교 이동시간을 입력하면 요일별 출발 시간을 시간표에 표시해요</span>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:140px;">
+              <label class="field-label" for="commute-go" style="font-size:13px;">🌅 등교 소요시간</label>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <input id="commute-go" type="number" min="0" max="240" step="5" value="60"
+                  style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;" />
+                <span style="font-size:13px;color:var(--text-soft);">분</span>
+              </div>
+            </div>
+            <div style="flex:1;min-width:140px;">
+              <label class="field-label" for="commute-back" style="font-size:13px;">🌙 하교 소요시간</label>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <input id="commute-back" type="number" min="0" max="240" step="5" value="60"
+                  style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;" />
+                <span style="font-size:13px;color:var(--text-soft);">분</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -6911,6 +6950,38 @@ textarea:focus {
             <button type="button" class="day-btn" data-day="fri">금</button>
           </div>
           <span class="day-hint" id="dayHint">선택한 요일이 없습니다 — 여러 요일을 선택할 수 있어요</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="field">
+          <span class="field-label">연강 / 공강 선호</span>
+          <div class="radio-list">
+            <label class="radio-option">
+              <input type="radio" name="gap-pref" value="compact" />
+              <span class="radio-custom"></span>
+              <span class="radio-text">
+                <span class="radio-label">연강 위주</span>
+                <span class="radio-desc">수업을 몰아서 붙여 등교일을 줄여요</span>
+              </span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="gap-pref" value="spread" />
+              <span class="radio-custom"></span>
+              <span class="radio-text">
+                <span class="radio-label">공강 여유</span>
+                <span class="radio-desc">수업 사이에 쉬는 시간을 두고 분산해요</span>
+              </span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="gap-pref" value="any" checked />
+              <span class="radio-custom"></span>
+              <span class="radio-text">
+                <span class="radio-label">상관없음</span>
+                <span class="radio-desc">연강·공강 제한 없이 최적 시간표 구성</span>
+              </span>
+            </label>
+          </div>
         </div>
       </div>
     </div>
@@ -7108,60 +7179,20 @@ textarea:focus {
   <div class="compare-grid" id="compareGrid"></div>
 </div>
 
-<div class="ctb" style="margin-top:16px;">
-  <div class="ctb-inner">
-    <span class="ctb-label">목표 학점</span>
-    <div class="ctb-btns">
-      <button class="ctb-btn" onclick="setTarget(12)">12학점</button>
-      <button class="ctb-btn" onclick="setTarget(15)">15학점</button>
-      <button class="ctb-btn active" onclick="setTarget(18)">18학점</button>
-      <button class="ctb-btn" onclick="setTarget(21)">21학점</button>
-    </div>
-    <span class="ctb-hint" id="ctbHint"></span>
-  </div>
-</div>
-
 <div class="hm-result-summary">
-  <div class="hm-score-panel">
-    <div class="hm-result-pill">🏆 현재 추천안</div>
-    <div class="hm-score-top">
-      <div>
-        <div class="hm-score-label">시간표 적합도</div>
-        <div class="hm-score-number">92</div>
-      </div>
-      <div class="hm-chip">Best Match</div>
-    </div>
-    <div class="hm-meter"><div class="hm-meter-row"><span>공강 만족도</span><strong>95%</strong></div><div class="hm-meter-track"><div class="hm-meter-fill" style="width:95%"></div></div></div>
-    <div class="hm-meter"><div class="hm-meter-row"><span>졸업요건 충족</span><strong>100%</strong></div><div class="hm-meter-track"><div class="hm-meter-fill" style="width:100%"></div></div></div>
-    <div class="hm-meter"><div class="hm-meter-row"><span>이동거리 효율</span><strong>88%</strong></div><div class="hm-meter-track"><div class="hm-meter-fill" style="width:88%"></div></div></div>
-    <div class="hm-meter"><div class="hm-meter-row"><span>시간대 선호</span><strong>84%</strong></div><div class="hm-meter-track"><div class="hm-meter-fill" style="width:84%"></div></div></div>
-  </div>
-  <div class="hm-reason-card">
-    <h3>추천 이유</h3>
-    <div class="hm-reasons">
-      <div class="hm-reason-item"><strong>공강 조건 반영</strong>선택한 공강 요일 조건을 우선 반영했습니다.</div>
-      <div class="hm-reason-item"><strong>졸업요건 고려</strong>전공필수·교양 영역을 함께 포함했습니다.</div>
-      <div class="hm-reason-item"><strong>이동 동선 최소화</strong>연속 수업 간 강의실 이동 부담을 낮췄습니다.</div>
-      <div class="hm-reason-item"><strong>비교 가능 설계</strong>3가지 추천안을 점수와 조건으로 비교할 수 있습니다.</div>
-    </div>
-  </div>
-</div>
-
-<div class="hm-compare-polish">
   <div class="hm-compare-card">
     <div class="hm-compare-head">
-      <div><h3>추천안 비교 요약</h3><span>추천 알고리즘의 판단 기준을 보여주는 영역입니다.</span></div>
+      <div><h3>추천안 비교 요약</h3><span>3가지 추천안을 한눈에 비교해요.</span></div>
       <span class="hm-chip">정량 비교</span>
     </div>
     <table class="hm-compare-table">
       <thead><tr><th>평가 항목</th><th>추천안 A</th><th>추천안 B</th><th>추천안 C</th></tr></thead>
-      <tbody>
-        <tr><td>추천도</td><td class="hm-best">92점</td><td>86점</td><td>78점</td></tr>
-        <tr><td>공강</td><td class="hm-best">화·금 공강</td><td>월·금 공강</td><td>수요일 공강</td></tr>
-        <tr><td>총 학점</td><td>18학점</td><td>15학점</td><td>21학점</td></tr>
-        <tr><td>이동거리</td><td class="hm-best">짧음</td><td>보통</td><td>김</td></tr>
-      </tbody>
+      <tbody id="hmCompareBody"></tbody>
     </table>
+  </div>
+  <div class="hm-reason-card">
+    <h3>추천 이유</h3>
+    <div class="hm-reasons" id="hmReasons"></div>
   </div>
 </div>
 
@@ -8139,6 +8170,25 @@ textarea:focus {
         .map(b => b.dataset.day);
       localStorage.setItem('sw_free_days', JSON.stringify(freeDays));
 
+      const gapPrefEl = document.querySelector('input[name="gap-pref"]:checked');
+      localStorage.setItem('sw_gap_pref', gapPrefEl ? gapPrefEl.value : 'any');
+
+      const planCountEl = document.querySelector('input[name="plan-count"]:checked');
+      localStorage.setItem('sw_plan_count', planCountEl ? planCountEl.value : '3');
+
+      /* 등하교 소요시간 저장 — 통학 설정(getCommute) 저장소에 반영 */
+      try {
+        const commuteCur = (typeof getCommute === 'function')
+          ? getCommute() : { go:60, back:60, mode:'bus', show:1 };
+        const goEl = document.getElementById('commute-go');
+        const backEl = document.getElementById('commute-back');
+        if (goEl)   commuteCur.go   = Math.max(0, parseInt(goEl.value, 10)   || 0);
+        if (backEl) commuteCur.back = Math.max(0, parseInt(backEl.value, 10) || 0);
+        if (typeof SS !== 'undefined' && typeof COMMUTE_KEY === 'function') {
+          SS.set(COMMUTE_KEY(), commuteCur);
+        }
+      } catch(e) { console.warn('[commute] 저장 실패:', e.message); }
+
       location.hash = '#/result';
     }
 
@@ -8496,6 +8546,7 @@ function _apiPlanToLocal(p) {
     off,
     walk: typeof getWalkSegments === 'function' ? getWalkSegments(courses) : [],
     courses,
+    plan_id: p.plan_id || '',   /* 백엔드 저장 연동용 */
   };
 }
 
@@ -8513,13 +8564,137 @@ function setTarget(n) {
 }
 
 function updateCtbHint() {
-  if (!PLANS[cur]) return;
+  /* 목표 학점 토글바는 결과 페이지에서 제거됨 — #ctbHint 없으면 no-op */
+  const hint = document.getElementById('ctbHint');
+  if (!hint || !PLANS[cur]) return;
   const total = PLANS[cur].courses.reduce((s, c) => s + c.cr, 0);
   const diff  = total - targetCr;
-  const hint  = document.getElementById('ctbHint');
   if (diff === 0) { hint.textContent = `현재 ${total}학점 = 목표 달성!`; hint.className = 'ctb-hint ok'; }
   else if (diff > 0) { hint.textContent = `현재 ${total}학점 — 목표보다 ${diff}학점 초과`; hint.className = 'ctb-hint over'; }
   else { hint.textContent = `현재 ${total}학점 — 목표보다 ${Math.abs(diff)}학점 부족`; hint.className = 'ctb-hint short'; }
+}
+
+/* ── 추천안 비교 요약 / 추천 이유 — 실제 PLANS 데이터 기반 자동 매핑 ── */
+function _planCredits(plan) {
+  return (plan && plan.courses ? plan.courses : []).reduce((s, c) => s + (c.cr || 0), 0);
+}
+function _planWalkMeters(plan) {
+  return (plan && plan.walk ? plan.walk : []).reduce((s, w) => s + (w.distanceMeters || 0), 0);
+}
+function _planOffLabel(plan) {
+  const off = (plan && plan.off) ? plan.off : [];
+  if (!off.length) return '공강 없음';
+  return off.map(d => String(d).replace('요일', '')).join('·') + ' 공강';
+}
+function _planWalkLabel(plan) {
+  if (!plan || !plan.courses || !plan.courses.length) return '—';
+  const m = _planWalkMeters(plan);
+  if (m === 0) return '이동 없음';
+  if (m < 350) return '짧음';
+  if (m < 800) return '보통';
+  return '김';
+}
+/* 플랜의 시간표 구조 지표 — 추천안마다 다른 값이 나오도록 세분화 */
+function _planMetrics(plan) {
+  const dayPeriods = {};   /* 요일 -> 점유 교시 배열 */
+  const buildings = new Set();
+  (plan && plan.courses ? plan.courses : []).forEach(c => {
+    getCourseSessions(c).forEach(s => {
+      if (s.room && typeof buildingLabel === 'function') {
+        const bl = buildingLabel(s.room);
+        if (bl) buildings.add(bl);
+      }
+      (s.days || []).forEach(day => {
+        if (!dayPeriods[day]) dayPeriods[day] = [];
+        for (let p = s.s; p < s.s + s.sp; p++) dayPeriods[day].push(p);
+      });
+    });
+  });
+  const days = Object.keys(dayPeriods);
+  let totalGap = 0;        /* 수업 사이 빈 교시(공강 교시) 총합 */
+  let maxDaySpan = 0;      /* 하루 최대 점유 폭 */
+  let firstPeriodSum = 0;  /* 각 요일 첫 교시 합 (이른 등교일수록 낮음) */
+  let lastPeriodMax = 0;   /* 가장 늦게 끝나는 교시 */
+  days.forEach(d => {
+    const ps = [...new Set(dayPeriods[d])].sort((a, b) => a - b);
+    const span = ps[ps.length - 1] - ps[0] + 1;
+    totalGap += span - ps.length;
+    if (span > maxDaySpan) maxDaySpan = span;
+    firstPeriodSum += ps[0];
+    if (ps[ps.length - 1] > lastPeriodMax) lastPeriodMax = ps[ps.length - 1];
+  });
+  return {
+    classDays: days.length,                                  /* 등교일 수 */
+    totalGap,                                                /* 빈 교시 총합 */
+    maxDaySpan,                                              /* 하루 최대 길이 */
+    firstPeriodSum,                                          /* 첫 교시 합 */
+    lastPeriodMax,                                           /* 최종 교시 */
+    buildingCount: buildings.size,                           /* 사용 건물 수 */
+    walkMeters: _planWalkMeters(plan),                       /* 총 이동거리(m) */
+    tight: (plan.walk || []).filter(w => w.tight).length,    /* 빡빡한 이동 횟수 */
+    credits: _planCredits(plan),
+  };
+}
+/* 추천도 점수 — 등교일·빈 교시·하루 길이·이른 등교·건물 수·이동거리를 종합해 추천안별로 차등 */
+function _planScore(plan) {
+  if (!plan || !plan.courses || !plan.courses.length) return 0;
+  const m = _planMetrics(plan);
+  let score = 100;
+  score -= m.classDays * 3.0;                    /* 등교일 많을수록 감점 */
+  score -= m.totalGap * 3.5;                     /* 수업 사이 빈 교시 감점 */
+  score -= Math.max(0, m.maxDaySpan - 5) * 2.0;  /* 하루가 너무 길면 감점 */
+  score -= Math.max(0, 4 - m.firstPeriodSum / Math.max(1, m.classDays)) * 1.5; /* 너무 이른 등교 감점 */
+  score -= Math.max(0, m.lastPeriodMax - 7) * 1.5; /* 너무 늦게 끝나면 감점 */
+  score -= Math.max(0, m.buildingCount - 2) * 1.5; /* 여러 건물 옮겨다니면 감점 */
+  score -= m.walkMeters / 90;                    /* 이동거리 비례 감점 */
+  score -= m.tight * 5;                          /* 빡빡한 강의실 이동 감점 */
+  if (m.credits < 12) score -= 6;                /* 최소 학점 미달 감점 */
+  return Math.max(40, Math.min(99, Math.round(score)));
+}
+function renderCompareSummary() {
+  const body = document.getElementById('hmCompareBody');
+  if (!body) return;
+  /* 실제 과목이 들어있는 플랜만 비교 대상 */
+  const valid = [0, 1, 2].map(i => PLANS[i]).filter(p => p && p.courses && p.courses.length);
+  if (!valid.length) {
+    body.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-soft);padding:22px;">아직 추천안이 없습니다.</td></tr>`;
+    return;
+  }
+  const cells = [0, 1, 2].map(i => PLANS[i]);
+  const scores = cells.map(p => (p && p.courses && p.courses.length) ? _planScore(p) : null);
+  const credits = cells.map(p => (p && p.courses && p.courses.length) ? _planCredits(p) : null);
+  const meters  = cells.map(p => (p && p.courses && p.courses.length) ? _planWalkMeters(p) : null);
+
+  const bestScore = Math.max(...scores.filter(v => v != null));
+  const bestMeter = Math.min(...meters.filter(v => v != null));
+  const bestOff   = Math.max(...cells.map(p => (p && p.off) ? p.off.length : -1));
+
+  const td = (val, isBest) => `<td class="${isBest ? 'hm-best' : ''}">${val}</td>`;
+  const rowScore = '<tr><td>추천도</td>' + cells.map((p, i) =>
+    td(scores[i] == null ? '—' : scores[i] + '점', scores[i] != null && scores[i] === bestScore)).join('') + '</tr>';
+  const rowOff = '<tr><td>공강</td>' + cells.map(p =>
+    td(p && p.courses && p.courses.length ? _planOffLabel(p) : '—',
+       p && p.off && p.off.length === bestOff && bestOff > 0)).join('') + '</tr>';
+  const rowCr = '<tr><td>총 학점</td>' + cells.map((p, i) =>
+    td(credits[i] == null ? '—' : credits[i] + '학점', false)).join('') + '</tr>';
+  const rowWalk = '<tr><td>이동거리</td>' + cells.map((p, i) =>
+    td(_planWalkLabel(p), meters[i] != null && meters[i] === bestMeter)).join('') + '</tr>';
+  body.innerHTML = rowScore + rowOff + rowCr + rowWalk;
+}
+function renderReasons(idx) {
+  const wrap = document.getElementById('hmReasons');
+  if (!wrap) return;
+  const plan = PLANS[idx];
+  if (!plan || !plan.courses || !plan.courses.length) {
+    wrap.innerHTML = `<div class="hm-reason-item" style="grid-column:1/-1;">조건에 맞는 추천안이 아직 없습니다.</div>`;
+    return;
+  }
+  const items = [];
+  items.push(`<div class="hm-reason-item"><strong>공강 조건</strong>${_planOffLabel(plan)} 구성으로 짜였습니다.</div>`);
+  items.push(`<div class="hm-reason-item"><strong>학점 구성</strong>이번 학기 ${_planCredits(plan)}학점, 총 ${plan.courses.length}과목입니다.</div>`);
+  items.push(`<div class="hm-reason-item"><strong>이동 동선</strong>강의실 간 이동거리는 "${_planWalkLabel(plan)}" 수준입니다.</div>`);
+  items.push(`<div class="hm-reason-item"><strong>추천도</strong>종합 추천 점수 ${_planScore(plan)}점으로 평가됐습니다.</div>`);
+  wrap.innerHTML = items.join('');
 }
 
 function mk(cls) { const e = document.createElement('div'); e.className = cls; return e; }
@@ -8713,26 +8888,50 @@ function updateSidebar(idx) {
     const commute = getCommute();
     const allSessions = plan.courses.flatMap(getCourseSessions);
     if (commute.show && commute.go > 0 && allSessions.length > 0) {
-      const minPeriod = Math.min(...allSessions.map(s => s.s));
-      const firstClassTime = TIMES[minPeriod - 1];
-      const [fcH, fcM] = firstClassTime.split(':').map(Number);
-      const departureMins = fcH * 60 + fcM - commute.go;
-      const depH = Math.floor(departureMins / 60);
-      const depM = departureMins % 60;
-      const depStr = `${depH}시 ${depM > 0 ? depM + '분' : ''}`.trim();
+      /* 요일별 첫 수업 교시 — 요일마다 등교 시작 시간이 다를 수 있음 */
+      const DAY_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri'];
+      const DAY_KR = { mon:'월', tue:'화', wed:'수', thu:'목', fri:'금' };
+      const dayFirstPeriod = {};
+      allSessions.forEach(s => {
+        (s.days || []).forEach(day => {
+          if (dayFirstPeriod[day] === undefined || s.s < dayFirstPeriod[day]) {
+            dayFirstPeriod[day] = s.s;
+          }
+        });
+      });
+      const fmtClock = (mins) => {
+        const h = Math.floor(mins / 60), m = mins % 60;
+        return `${h}시${m > 0 ? ' ' + m + '분' : ''}`;
+      };
+      /* 출발시간(분)이 같은 요일끼리 묶음 */
+      const groups = {};  /* departureMins -> { days:[], firstClassTime } */
+      DAY_ORDER.forEach(day => {
+        const period = dayFirstPeriod[day];
+        if (period === undefined) return;
+        const firstClassTime = TIMES[period - 1];
+        const [fcH, fcM] = firstClassTime.split(':').map(Number);
+        const dep = fcH * 60 + fcM - commute.go;
+        if (!groups[dep]) groups[dep] = { days: [], firstClassTime };
+        groups[dep].days.push(day);
+      });
       const modeIcon = commute.mode === 'subway' ? '🚇' : commute.mode === 'car' ? '🚗' : '🚌';
+      /* 출발시간 이른 순으로 정렬 */
+      const sortedDeps = Object.keys(groups).map(Number).sort((a, b) => a - b);
+      const rows = sortedDeps.map(dep => {
+        const g = groups[dep];
+        const dayLabel = g.days.map(d => DAY_KR[d]).join('·');
+        let warn = '';
+        if (dep < 7 * 60) warn = ' <span style="font-size:11px;">⚠️ 매우 이른 등교</span>';
+        else if (dep < 7 * 60 + 30) warn = ' <span style="font-size:11px;">⚠️ 이른 등교</span>';
+        return `<div style="font-weight:700;">${modeIcon} ${dayLabel} — 첫 수업 ${g.firstClassTime} · 등교 ${commute.go}분 → <strong>${fmtClock(dep)} 출발 필요</strong>${warn}</div>`;
+      });
+      /* 박스 색 — 가장 이른 출발 기준 */
+      const earliest = sortedDeps[0];
       let boxStyle = 'background:#F0FDF4;border:1px solid #A7F3D0;color:#065F46;';
-      let warnNote = '';
-      if (departureMins < 7 * 60) {
-        boxStyle = 'background:#FEE2E2;border:1px solid #FCA5A5;color:#991B1B;';
-        warnNote = '<div style="font-size:11px;margin-top:3px;">⚠️ 오전 7시 이전 출발 — 매우 이른 등교입니다</div>';
-      } else if (departureMins < 7 * 60 + 30) {
-        boxStyle = 'background:#FEF9C3;border:1px solid #FDE68A;color:#92400E;';
-        warnNote = '<div style="font-size:11px;margin-top:3px;">⚠️ 오전 7시 30분 이전 출발 — 이른 등교입니다</div>';
-      }
-      commuteHtml = `<div style="margin-top:10px;padding:10px 12px;border-radius:10px;font-size:12px;line-height:1.6;${boxStyle}">
-        <div style="font-weight:700;">${modeIcon} 첫 수업 ${firstClassTime} · 등교 ${commute.go}분 → <strong>${depStr} 출발 필요</strong></div>
-        ${warnNote}
+      if (earliest < 7 * 60) boxStyle = 'background:#FEE2E2;border:1px solid #FCA5A5;color:#991B1B;';
+      else if (earliest < 7 * 60 + 30) boxStyle = 'background:#FEF9C3;border:1px solid #FDE68A;color:#92400E;';
+      commuteHtml = `<div style="margin-top:10px;padding:10px 12px;border-radius:10px;font-size:12px;line-height:1.7;${boxStyle}">
+        ${rows.join('')}
       </div>`;
     }
   }
@@ -8775,6 +8974,7 @@ function selectPlan(idx) {
   updateSidebar(idx);
   updateTable(idx);
   updateCtbHint();
+  renderReasons(idx);
 }
 
 function showToast(msg) {
@@ -29380,6 +29580,44 @@ const BUILDINGS = [
 ];
 window.__ROOM_DATA_READY = true;
 
+/* ── 빈 강의실: 백엔드 강의 DB 기반 실시간 스케줄 로드 ──
+   GET /rooms/schedules 로 전체 강의실 주간 점유표를 받아 static BUILDINGS 를 교체.
+   실패 시 기존 static 데이터로 자동 폴백. */
+async function _loadRoomSchedulesFromApi() {
+  if (window.__ROOM_API_LOADED) return;
+  try {
+    const base = (typeof getBaseUrl === 'function') ? getBaseUrl() : '';
+    const headers = base.includes('ngrok') ? { 'ngrok-skip-browser-warning': 'true' } : {};
+    const res = await fetch(base + '/rooms/schedules', { headers, signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    const data = json.data || json;
+    if (!Array.isArray(data) || !data.length) throw new Error('empty');
+    const mapped = data
+      .filter(b => (b.rooms || []).length > 0)
+      .map(b => ({
+        id: b.building_id,
+        name: b.building_name,
+        icon: b.icon || '🏛',
+        rooms: (b.rooms || []).map(r => ({
+          name: r.name,
+          cap: r.capacity || 0,
+          tags: r.tags || [],
+          weekly: r.weekly || {},
+          sch: (r.weekly && r.weekly.mon) ? r.weekly.mon : [0,0,0,0,0,0,0,0,0],
+        })),
+      }));
+    if (!mapped.length) throw new Error('no rooms');
+    BUILDINGS.length = 0;            /* const 배열 in-place 교체 */
+    mapped.forEach(b => BUILDINGS.push(b));
+    curBldg = 0;
+    window.__ROOM_API_LOADED = true;
+    console.log('[rooms] 백엔드 강의 DB 기준 스케줄 로드 완료 —', BUILDINGS.length, '개 건물');
+  } catch (e) {
+    console.warn('[rooms] 백엔드 스케줄 로드 실패, 정적 데이터 사용:', e.message);
+  }
+}
+
 let curPeriod = -1; /* -1=모두보기, 0=수업없음, 1-9=교시 */
 let curBldg = 0;
 let selectedPeriod = 0; /* 현재 표시 중인 교시 인덱스(0-8), -1=지금 */
@@ -29468,7 +29706,9 @@ function buildPeriodButtons(autoPeriod) {
 }
 
 function setActivePeriodBtn(idx) {
-  const btns = document.querySelectorAll('.period-btn');
+  /* #periodRow 안의 버튼만 대상으로 — 요일 버튼(#roomDayRow)도 .period-btn 클래스를
+     공유하기 때문에 전체 선택하면 교시 클릭이 엉뚱한 요일 버튼을 활성화시킴 */
+  const btns = document.querySelectorAll('#periodRow .period-btn');
   btns.forEach((b, i) => b.classList.toggle('active', i === idx));
 }
 
@@ -29568,11 +29808,11 @@ const finalDept     = localStorage.getItem('sw_final_dept') || savedDept;
 
 /* ─ 데이터 ─ */
 const CATEGORIES = [
-  { name:'전공필수', done:33, total:45, color:'#3B82F6' },
-  { name:'전공선택', done:18, total:30, color:'#7C3AED' },
-  { name:'교양필수', done:14, total:20, color:'#16A34A' },
-  { name:'교양선택', done:8,  total:10, color:'#D97706' },
-  { name:'기타·자유', done:17, total:25, color:'#EC4899' },
+  { name:'전공필수', done:0, total:45, color:'#3B82F6' },
+  { name:'전공선택', done:0, total:30, color:'#7C3AED' },
+  { name:'교양필수', done:0, total:20, color:'#16A34A' },
+  { name:'교양선택', done:0, total:10, color:'#D97706' },
+  { name:'기타·자유', done:0, total:25, color:'#EC4899' },
 ];
 
 
@@ -29713,15 +29953,30 @@ function swAttachLiveTotal() {
    - 학수번호로 자동 분류 (CURRICULUM 매칭)
    - 졸업요건·필수과목·시간표 추천에 모두 반영
    ════════════════════════════════════════════════════════ */
-const GRADE_HISTORY_KEY = 'sw_grade_history_v1';
+/* 학기 학점 이력 — 계정(아이디)별로 분리 저장.
+   (구버전 'sw_grade_history_v1' 공용 키는 1회 마이그레이션 후 폐기) */
+const GRADE_HISTORY_KEY = () => 'sw_grade_history_v1_' + (getCurrentUser()?.id || 'guest');
+const GRADE_HISTORY_LEGACY_KEY = 'sw_grade_history_v1';
 const GRADE_POINTS = { 'A+':4.5, 'A0':4.0, 'A-':3.7, 'B+':3.3, 'B0':3.0, 'B-':2.7, 'C+':2.3, 'C0':2.0, 'C-':1.7, 'D+':1.3, 'D0':1.0, 'D-':0.7, 'F':0.0, 'P':null };
 
 function swGetGradeHistory() {
-  try { return JSON.parse(localStorage.getItem(GRADE_HISTORY_KEY) || '{}'); }
-  catch(e) { return {}; }
+  try {
+    const key = GRADE_HISTORY_KEY();
+    let raw = localStorage.getItem(key);
+    /* 구버전 공용 키 → 현재 계정 키로 1회 이관 (현재 계정에 데이터 없을 때만) */
+    if (raw === null) {
+      const legacy = localStorage.getItem(GRADE_HISTORY_LEGACY_KEY);
+      if (legacy !== null && getCurrentUser()?.id) {
+        localStorage.setItem(key, legacy);
+        localStorage.removeItem(GRADE_HISTORY_LEGACY_KEY);
+        raw = legacy;
+      }
+    }
+    return JSON.parse(raw || '{}');
+  } catch(e) { return {}; }
 }
 function swSaveGradeHistory(h) {
-  try { localStorage.setItem(GRADE_HISTORY_KEY, JSON.stringify(h)); } catch(e) {}
+  try { localStorage.setItem(GRADE_HISTORY_KEY(), JSON.stringify(h)); } catch(e) {}
 }
 
 /* 학수번호 → 카테고리 분류 (현재 사용자 학번-전공 기준) */
@@ -30947,7 +31202,8 @@ function renderChecklist() {
     );
   } catch(_) {}
   const isDoneCourse = (c) => (c.code && completed.has(c.code)) ||
-                              (c.name && completedNames.has(c.name.trim()));
+                              (c.name && completedNames.has(c.name.trim())) ||
+                              (c.name && completed.has('@n:' + c.name.trim()));
 
   /* 학년-학기별 그룹화 */
   const bySem = {};
@@ -30996,9 +31252,11 @@ function renderChecklist() {
     const items = bySem[sem].map(c => {
       const isDone = isDoneCourse(c);
       const color = groupColor[c.group] || '#64748B';
+      const _nameEsc = (c.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      /* 과목번호가 없는 필수과목도 이름 기준으로 직접 토글 가능 */
       const clickHandler = c.code
         ? `toggleCompletedCourse('${c.code}')`
-        : `_globalToast?.('💡 이 과목은 학기별 입력에 같은 이름으로 추가하면 자동 인식됩니다.')`;
+        : `toggleCompletedCourseName('${_nameEsc}')`;
       return `
         <div onclick="${clickHandler}"
              style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:${isDone ? 'rgba(48,209,88,.08)' : 'var(--white)'};
@@ -31191,7 +31449,9 @@ window.addEventListener('DOMContentLoaded', () => {
 /* 애니메이션 */
 requestAnimationFrame(() => {
   setTimeout(() => {
-    const overall = Math.round(90 / 130 * 100);
+    const _doneCr = getStoredDoneCredits();
+    const _totalCr = getGradCategories().reduce((s, c) => s + c.total, 0) || 130;
+    const overall = Math.max(0, Math.min(100, Math.round(_doneCr / _totalCr * 100)));
     document.getElementById('overallBar').style.width = overall + '%';
     document.getElementById('overallPct').textContent = overall;
     document.querySelectorAll('.pl-bar').forEach(b => {
@@ -31325,8 +31585,16 @@ window._restoreInput = function() {
   else { _loadUniTree().then(_apply); }
 };
 
-/* OPTION: nothing dynamic to restore right now (defaults are fine) */
-window._restoreOption = function() {};
+/* OPTION: 저장된 등하교 소요시간을 입력칸에 복원 */
+window._restoreOption = function() {
+  try {
+    const c = (typeof getCommute === 'function') ? getCommute() : { go:60, back:60 };
+    const goEl = document.getElementById('commute-go');
+    const backEl = document.getElementById('commute-back');
+    if (goEl)   goEl.value   = c.go;
+    if (backEl) backEl.value = c.back;
+  } catch(e) {}
+};
 
 /* RESULT: 사용자 설정을 읽어 시간표 동적 생성 */
 window._refreshResult = async function() {
@@ -31338,6 +31606,8 @@ window._refreshResult = async function() {
   const timePref      = localStorage.getItem('sw_time_pref')  || 'any';
   const freeDays      = JSON.parse(localStorage.getItem('sw_free_days')  || '[]');
   const interests     = JSON.parse(localStorage.getItem('sw_interests')  || '[]');
+  const gapPref       = localStorage.getItem('sw_gap_pref')   || 'any';
+  const planCount     = parseInt(localStorage.getItem('sw_plan_count') || '3', 10) === 1 ? 1 : 3;
 
   /* 로딩 상태 표시 */
   document.querySelectorAll('.plan-tab').forEach((tab, i) => {
@@ -31361,19 +31631,24 @@ window._refreshResult = async function() {
         target_credits:   targetCredits,
         plan_period:      'single',
         interests,
-        plan_count:       3,
+        plan_count:       planCount,
+        gap_preference:   gapPref,
       });
       const apiPlans = (res.data && res.data.plans) ? res.data.plans : [];
+      window.__lastRecId = (res.data && res.data.recommendation_id) || null;
       PLANS = apiPlans.map(_apiPlanToLocal);
 
       /* 조건이 너무 제한적이면 완화해서 재시도 */
       if (!PLANS.length || PLANS.every(p => !p.courses.length)) {
         const res2 = await api.recommend({
           start_hour:9, time_preference:'any', free_days:[], target_credits:targetCredits,
-          plan_period:'single', interests:[], plan_count:3,
+          plan_period:'single', interests:[], plan_count:planCount, gap_preference:gapPref,
         });
         const plans2 = (res2.data && res2.data.plans) ? res2.data.plans : [];
-        if (plans2.length) PLANS = plans2.map(_apiPlanToLocal);
+        if (plans2.length) {
+          window.__lastRecId = (res2.data && res2.data.recommendation_id) || null;
+          PLANS = plans2.map(_apiPlanToLocal);
+        }
       }
 
       /* 여전히 비어있으면 빈 상태 */
@@ -31406,6 +31681,9 @@ window._refreshResult = async function() {
 
   cur = 0;
   selectPlan(0);
+
+  /* 추천안 비교 요약 — 실제 PLANS 데이터로 채움 */
+  if (typeof renderCompareSummary === 'function') renderCompareSummary();
 
   /* 비교뷰가 열려있으면 갱신 */
   if (_compareOpen && typeof renderCompareView === 'function') renderCompareView();
@@ -32454,6 +32732,15 @@ function toggleCompletedCourse(code) {
   setCompletedCourseCodes(s);
   if (typeof renderChecklist === 'function') renderChecklist();
 }
+/* 과목번호(학수번호)가 없는 필수과목 — 이름 기준으로 이수 토글 */
+function toggleCompletedCourseName(name) {
+  if (!name) return;
+  const s = getCompletedCourseCodes();
+  const token = '@n:' + name.trim();
+  if (s.has(token)) s.delete(token); else s.add(token);
+  setCompletedCourseCodes(s);
+  if (typeof renderChecklist === 'function') renderChecklist();
+}
 
 /* 학번 + 학과로 정밀 졸업요건 조회 (없으면 가까운 연도로 fallback) */
 function getGradReqByStudent(admissionYear, deptOrMajor) {
@@ -32633,12 +32920,19 @@ window._refreshGraduation = async function() {
 
 /* ROOMS: re-render time-based room availability on each visit */
 window._refreshRooms = function() {
-  if (typeof updateHero === 'function') updateHero();
-  if (typeof buildRoomDayButtons === 'function') buildRoomDayButtons();
-  if (typeof buildRoomDayButtons === 'function') buildRoomDayButtons();
-  if (typeof buildRoomDayButtons === 'function') buildRoomDayButtons();
-  if (typeof buildRoomDayButtons === 'function') buildRoomDayButtons();
-  if (typeof renderRooms === 'function') renderRooms();
+  const _render = () => {
+    if (typeof updateHero === 'function') updateHero();
+    if (typeof buildRoomDayButtons === 'function') buildRoomDayButtons();
+    if (typeof buildPeriodButtons === 'function') buildPeriodButtons(typeof detectPeriod === 'function' ? detectPeriod() : -1);
+    if (typeof buildBldgButtons === 'function') buildBldgButtons();
+    if (typeof renderRooms === 'function') renderRooms();
+  };
+  /* 백엔드 강의 DB 스케줄 로드 후 렌더 (실패해도 정적 데이터로 렌더) */
+  if (typeof _loadRoomSchedulesFromApi === 'function') {
+    _loadRoomSchedulesFromApi().then(_render);
+  } else {
+    _render();
+  }
 };
 
 /* ====================================================================
@@ -32718,6 +33012,9 @@ const api = {
   recommend:      (data)   => apiCall('/timetables/recommend', { method:'POST', body: JSON.stringify(data) }),
   saveTimetable:  (data)   => apiCall('/timetables/saved',     { method:'POST', body: JSON.stringify(data) }),
   getSavedTT:     ()       => apiCall('/timetables/saved'),
+  deleteSavedTT:  (id)     => apiCall('/timetables/saved/' + encodeURIComponent(id), { method:'DELETE' }),
+  getReviews:     ()       => apiCall('/reviews'),
+  postReview:     (data)   => apiCall('/reviews', { method:'POST', body: JSON.stringify(data) }),
   getGraduation:  ()       => apiCall('/graduation/analysis'),
   getChecklist:   ()       => apiCall('/graduation/checklist'),
   getGradRecommendations: () => apiCall('/graduation/recommendations'),
@@ -33068,32 +33365,26 @@ async function _updateServerBar() {
   const label = document.getElementById('authServerLabel');
   if (!bar || !label) return;
 
-  const isLocalHost = ['localhost', '127.0.0.1'].includes(location.hostname);
-  const usingDefault = getBaseUrl() === _DEFAULT_BACKEND;
-
-  /* 배포 환경(GitHub Pages 등)에서 기본 localhost URL을 그대로 쓰는 경우 */
-  if (!isLocalHost && usingDefault) {
-    bar.style.background = '#FEF3C7'; bar.style.borderColor = '#FCD34D'; bar.style.color = '#92400E';
-    label.textContent = '⚠️ 백엔드 주소를 설정해주세요';
-    const panel = document.getElementById('serverConfigPanel');
-    const input = document.getElementById('serverUrlInput');
-    if (panel) panel.style.display = '';
-    if (input) input.value = '';
-    return;
-  }
-
+  /* 헬스체크 결과를 단일 진실로 사용 — localhost/배포 구분 없이
+     실제로 응답하면 연결됨, 아니면 서버 설정 안내. */
   label.textContent = '서버 확인 중…';
   bar.style.background = '#F8FAFC'; bar.style.borderColor = '#E2E8F0'; bar.style.color = '#64748B';
+  const base = getBaseUrl();
+  const isLocal = /(localhost|127\.0\.0\.1)/.test(base);
   try {
-    const ngrokHdr = getBaseUrl().includes('ngrok') ? { 'ngrok-skip-browser-warning': 'true' } : {};
-    const r = await fetch(getBaseUrl().replace(/\/v1$/, '') + '/health', { headers: ngrokHdr, signal: AbortSignal.timeout(3000) });
+    const ngrokHdr = base.includes('ngrok') ? { 'ngrok-skip-browser-warning': 'true' } : {};
+    const r = await fetch(base.replace(/\/v1$/, '') + '/health', { headers: ngrokHdr, signal: AbortSignal.timeout(3000) });
     if (r.ok) {
       bar.style.background = '#F0FDF4'; bar.style.borderColor = '#A7F3D0'; bar.style.color = '#065F46';
-      label.textContent = isLocalHost ? '🟢 서버 연결됨 (로컬)' : `🟢 서버 연결됨`;
+      label.textContent = isLocal ? '🟢 서버 연결됨 (로컬)' : '🟢 서버 연결됨';
     } else { throw new Error('non-ok'); }
   } catch(_) {
     bar.style.background = '#FEF3C7'; bar.style.borderColor = '#FCD34D'; bar.style.color = '#92400E';
-    label.textContent = '🔌 서버 연결 안 됨 — 오프라인 모드로 동작합니다';
+    label.textContent = '🔌 서버 연결 안 됨 — "서버 설정"에서 주소를 확인하세요';
+    const panel = document.getElementById('serverConfigPanel');
+    const input = document.getElementById('serverUrlInput');
+    if (panel) panel.style.display = '';
+    if (input && !input.value) input.value = base;
   }
 }
 
@@ -33711,12 +34002,46 @@ const DEFAULT_REVIEWS = [
   { id:'r6', course:'창업과기업가정신',   prof:'김 현',  stars:5, content:'팀 프로젝트 중심으로 진행되어 실전 경험을 쌓을 수 있는 좋은 강의!', author:'학생F', ts: Date.now() - 86400000*5 },
   { id:'r7', course:'음악과사회',         prof:'정혜린', stars:4, content:'편안한 분위기에서 다양한 음악을 접할 수 있어요. 과제도 부담 없는 편.', author:'학생G', ts: Date.now() - 86400000*3 },
 ];
+/* 강의평은 백엔드(/reviews)에서 불러옴 — 모든 사용자 공유.
+   서버 오프라인이면 로컬 캐시 / 기본 데이터로 폴백. */
+let __reviewsCache = null;
+
+/* 백엔드 응답({professor, created_at}) → 프론트 형식({prof, ts})으로 매핑 */
+function _apiReviewToLocal(r) {
+  return {
+    id: r.id,
+    course: r.course,
+    prof: r.professor,
+    stars: r.stars,
+    content: r.content,
+    author: r.author || '익명',
+    ts: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
+  };
+}
+
 function getReviews() {
+  if (__reviewsCache) return __reviewsCache;
+  /* 아직 서버에서 못 받아온 상태 — 로컬 캐시 또는 기본 데이터 */
   let arr = SS.get(REVIEWS_KEY);
-  if (!arr) { arr = JSON.parse(JSON.stringify(DEFAULT_REVIEWS)); SS.set(REVIEWS_KEY, arr); }
+  if (!arr) arr = JSON.parse(JSON.stringify(DEFAULT_REVIEWS));
   return arr;
 }
-function setReviews(arr) { SS.set(REVIEWS_KEY, arr); }
+function setReviews(arr) { __reviewsCache = arr; SS.set(REVIEWS_KEY, arr); }
+
+/* 서버에서 강의평 목록을 새로 불러와 캐시에 반영 */
+async function loadReviewsFromApi() {
+  try {
+    const res = await api.getReviews();
+    const data = (res && res.data) ? res.data : [];
+    __reviewsCache = data.map(_apiReviewToLocal);
+    SS.set(REVIEWS_KEY, __reviewsCache);  /* 오프라인 폴백용 캐시 */
+    return true;
+  } catch(e) {
+    console.warn('[reviews] 백엔드 로드 실패, 로컬 데이터 사용:', e.message);
+    if (!__reviewsCache) __reviewsCache = getReviews();
+    return false;
+  }
+}
 
 let _rvTab = 'course';
 let _rvStarSel = 0;
@@ -33864,7 +34189,7 @@ document.addEventListener('click', (e) => {
     });
   }
 });
-function submitReview() {
+async function submitReview() {
   const course = document.getElementById('rvCourse').value.trim();
   const prof   = document.getElementById('rvProf').value.trim();
   const content = document.getElementById('rvContent').value.trim();
@@ -33873,9 +34198,27 @@ function submitReview() {
   if (!_rvStarSel) return alert('별점을 선택해주세요.');
   if (content.length < 5) return alert('한줄평을 5자 이상 작성해주세요.');
 
-  const arr = getReviews();
+  /* 로그인 상태면 백엔드에 등록 — 모든 사용자에게 공유됨 */
+  if (typeof getToken === 'function' && getToken()) {
+    try {
+      await api.postReview({ course, professor: prof, stars: _rvStarSel, content });
+      closeModal('modalReview');
+      await loadReviewsFromApi();      /* 서버 최신 목록으로 갱신 */
+      renderReviewSummary();
+      renderReviewList();
+      if (typeof _globalToast === 'function') _globalToast('✅ 강의평이 등록되었습니다');
+      return;
+    } catch(e) {
+      console.warn('[reviews] 등록 실패:', e.message);
+      alert('강의평 등록에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+  }
+
+  /* 비로그인 — 로컬에만 임시 저장 */
+  const arr = getReviews().slice();
   const u = getCurrentUser();
-  arr.push({
+  arr.unshift({
     id: 'r_' + Date.now(),
     course, prof,
     stars: _rvStarSel,
@@ -33887,9 +34230,11 @@ function submitReview() {
   closeModal('modalReview');
   renderReviewSummary();
   renderReviewList();
+  if (typeof _globalToast === 'function') _globalToast('💾 강의평 저장됨 (로그인하면 다른 학생과 공유돼요)');
 }
 
-window._refreshReviews = function() {
+window._refreshReviews = async function() {
+  await loadReviewsFromApi();
   renderReviewSummary();
   renderReviewList();
 };
@@ -34081,7 +34426,32 @@ async function confirmSaveTT() {
       name,
       savedAt: new Date().toISOString(),
       plan: JSON.parse(JSON.stringify(plan)),
+      serverId: null,   /* 백엔드 timetable_id (동기화 성공 시) */
     };
+
+    /* 백엔드에 실제 저장 — 추천 시 받은 recommendation_id + plan_id 사용 */
+    let syncMsg = '';
+    if (getToken() && window.__lastRecId && plan.plan_id) {
+      try {
+        const res = await api.saveTimetable({
+          recommendation_id: window.__lastRecId,
+          plan_id: plan.plan_id,
+          semester: '2026-1',
+        });
+        newTT.serverId = res?.data?.timetable_id || null;
+        syncMsg = ' + 서버 동기화';
+      } catch(err) {
+        if (/409|CONFLICT|이미 저장/.test(err.message || '')) {
+          syncMsg = ' (서버에 이미 저장됨)';
+        } else {
+          console.warn('[saveTimetable] backend sync failed:', err.message);
+          syncMsg = ' (서버 오프라인 — 로컬만 저장)';
+        }
+      }
+    } else if (getToken()) {
+      syncMsg = ' (로컬 저장 — 추천 결과에서 저장해야 서버 동기화됨)';
+    }
+
     saved.push(newTT);
     setSavedTimetables(saved);
 
@@ -34089,23 +34459,7 @@ async function confirmSaveTT() {
     if (saved.length === 1) setPrimaryTTId(newTT.id);
 
     closeSaveModal();
-
-    /* 백엔드에 보조 sync (실패해도 로컬 저장은 유효) */
-    if (getToken()) {
-      try {
-        await api.saveTimetable({
-          recommendation_id: newTT.id,
-          plan_id: 'A',
-          semester: '2026-1',
-        });
-        showToast(`💾 "${name}" 저장 + 백엔드 동기화 완료!`);
-      } catch(err) {
-        console.warn('[saveTimetable] backend sync failed:', err.message);
-        showToast(`💾 "${name}" 저장 (백엔드 오프라인)`);
-      }
-    } else {
-      showToast(`💾 "${name}" 저장 완료!`);
-    }
+    showToast(`💾 "${name}" 저장 완료${syncMsg}!`);
   } finally {
     unlock();
   }
@@ -34115,6 +34469,7 @@ async function confirmSaveTT() {
 function deleteTimetable(id) {
   if (!confirm('이 시간표를 삭제할까요?')) return;
   let saved = getSavedTimetables();
+  const target = saved.find(t => t.id === id);
   saved = saved.filter(t => t.id !== id);
   setSavedTimetables(saved);
 
@@ -34123,6 +34478,13 @@ function deleteTimetable(id) {
     setPrimaryTTId(saved.length > 0 ? saved[0].id : null);
   }
   window._refreshMyTimetable();
+
+  /* 서버에도 저장돼 있던 시간표면 서버에서도 삭제 */
+  if (target && target.serverId && getToken()) {
+    api.deleteSavedTT(target.serverId).catch(err => {
+      console.warn('[deleteTimetable] backend sync failed:', err.message);
+    });
+  }
 }
 
 /* 대표 시간표 설정 */
@@ -34146,6 +34508,19 @@ window._refreshMyTimetable = function() {
   if (!listEl) return;
 
   if (countEl) countEl.textContent = `${saved.length}개 저장됨`;
+
+  /* 서버에 저장된 시간표 개수 확인 — 로컬 카운트와 대조 */
+  if (countEl && getToken()) {
+    api.getSavedTT().then(res => {
+      const serverCount = (res && res.data) ? res.data.length : 0;
+      const localSynced = saved.filter(t => t.serverId).length;
+      if (serverCount === localSynced) {
+        countEl.textContent = `${saved.length}개 저장됨 · ☁️ 서버 동기화 ${serverCount}개`;
+      } else {
+        countEl.textContent = `${saved.length}개 저장됨 · ☁️ 서버 ${serverCount}개`;
+      }
+    }).catch(() => { /* 서버 오프라인 — 로컬 카운트만 표시 */ });
+  }
 
   if (saved.length === 0) {
     listEl.innerHTML = `
@@ -34442,36 +34817,7 @@ function finishOnboarding() {
   </div>
 </div>
 
-<!-- ============================================================
-     🌙 테마 토글 (우측 상단)
-============================================================ -->
-<button id="swThemeToggle" onclick="swToggleTheme()" title="다크/라이트 모드 전환" aria-label="테마 전환">🌙</button>
-
-<script>
-/* 🌙 테마 전환 */
-function swApplyThemeIcon() {
-  const cur = document.documentElement.getAttribute('data-theme') || 'light';
-  const btn = document.getElementById('swThemeToggle');
-  if (btn) btn.textContent = (cur === 'dark') ? '☀️' : '🌙';
-}
-function swToggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme') || 'light';
-  const next = (cur === 'dark') ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  try { localStorage.setItem('sw_theme', next); } catch(e) {}
-  swApplyThemeIcon();
-}
-swApplyThemeIcon();
-/* OS 테마가 바뀌면 자동 반영 (사용자가 직접 토글한 적 없을 때만) */
-if (window.matchMedia) {
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-    try { if (!localStorage.getItem('sw_theme')) {
-      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
-      swApplyThemeIcon();
-    }} catch(_) {}
-  });
-}
-</script>
+<!-- 다크모드 제거됨 — 라이트 모드 고정 -->
 
 </body>
 </html>
