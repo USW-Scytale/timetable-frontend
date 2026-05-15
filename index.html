@@ -8194,7 +8194,7 @@ textarea:focus {
 
 
 /* ====== route-result script ====== */
-const TIMES = ['9:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
+const TIMES = ['9:30','10:30','11:30','12:30','13:30','14:30','15:30','16:30','17:25','18:15'];
 const DC = { mon:2, tue:3, wed:4, thu:5, fri:6 };
 const TI = {
   mr: { label:'전공필수', cls:'tb-mr', color:'#3B82F6' },
@@ -8991,10 +8991,10 @@ document.querySelectorAll('.ctb-btn').forEach((b, i) => b.classList.toggle('acti
 /* ====== route-rooms script ====== */
 /* ─ 시간 정의 ─ */
 const PERIOD_RANGES = [
-  [9,0,9,50],[10,0,10,50],[11,0,11,50],[12,0,12,50],[13,0,13,50],
-  [14,0,14,50],[15,0,15,50],[16,0,16,50],[17,0,17,50]
+  [9,30,10,20],[10,30,11,20],[11,30,12,20],[12,30,13,20],[13,30,14,20],
+  [14,30,15,20],[15,30,16,20],[16,30,17,20],[17,25,18,10],[18,15,19,0]
 ];
-const PERIOD_LABELS = ['1교시 9:00','2교시 10:00','3교시 11:00','4교시 12:00','5교시 13:00','6교시 14:00','7교시 15:00','8교시 16:00','9교시 17:00'];
+const PERIOD_LABELS = ['1교시 9:30','2교시 10:30','3교시 11:30','4교시 12:30','5교시 13:30','6교시 14:30','7교시 15:30','8교시 16:30','9교시 17:25','10교시 18:15'];
 
 /* ─ 건물 데이터 ─ */
 const BUILDINGS = [
@@ -29630,7 +29630,7 @@ function detectPeriod() {
     const [sh, sm, eh, em] = PERIOD_RANGES[i];
     if (mins >= sh * 60 + sm && mins < eh * 60 + em) return i; /* 0-indexed */
   }
-  if (mins >= 9 * 60 && mins < 18 * 60) return -2; /* 쉬는시간 */
+  if (mins >= 9 * 60 + 30 && mins < 19 * 60) return -2; /* 쉬는시간 */
   return -3; /* 수업 없는 시간 */
 }
 
@@ -29655,7 +29655,7 @@ function updateHero() {
     document.getElementById('heroSub').textContent = '다음 교시까지 잠시 여유가 있어요';
   } else {
     document.getElementById('heroPeriod').textContent = '현재 수업 없는 시간';
-    document.getElementById('heroSub').textContent = '수업시간: 오전 9시 ~ 오후 5시 50분';
+    document.getElementById('heroSub').textContent = '수업시간: 오전 9시 30분 ~ 오후 7시';
   }
   return p;
 }
