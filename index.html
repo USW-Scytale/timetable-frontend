@@ -29877,25 +29877,11 @@ function numFromInput(id) {
   return Number.isFinite(v) ? v : 0;
 }
 function getStoredDoneCredits() {
-  const p = getCreditProfile();
-  /* 1. 사용자가 직접 입력한 총 이수학점 */
-  if (Number.isFinite(Number(p.totalDone)) && Number(p.totalDone) > 0) return Number(p.totalDone);
-  /* 2. 카테고리별 입력값 합계 (졸업요건 카드에서 직접 수정한 경우 포함) */
-  if (typeof computeProfileTotal === 'function') {
-    const catSum = computeProfileTotal(p);
-    if (catSum > 0) return catSum;
-  }
-  /* 3. 학기별 입력 합계 */
-  const records = getGradeRecords();
-  const recSum = records.reduce((s, r) => s + (Number(r.earned) || 0), 0);
-  if (recSum > 0) return recSum;
-  /* 4. 필수과목 체크리스트에서 체크한 과목 학점 합 */
+  /* 필수과목 체크리스트가 유일한 source of truth — 체크한 과목 학점 합 */
   if (typeof getCompletedRequiredCredits === 'function') {
-    const reqSum = getCompletedRequiredCredits();
-    if (reqSum > 0) return reqSum;
+    return getCompletedRequiredCredits();
   }
-  /* 5. CATEGORIES 기본값 (현재 모두 0) */
-  return CATEGORIES.reduce((s, c) => s + c.done, 0);
+  return 0;
 }
 function getGradCategories() {
   const p = getCreditProfile();
@@ -30848,9 +30834,52 @@ function swAggregateAndRefresh() {
   const legacy = deriveLegacyCredits(fields);
   const profile = { ...fields, ...legacy, totalDone: computeProfileTotal(fields), gpa, savedAt: Date.now() };
 
-  /* 저장 — 학점 프로필만 저장, 필수과목 체크는 독립 관리 */
+  /* 저장 — 학점 프로필 */
   writeJSONStorage(CREDIT_PROFILE_KEY, profile);
-  /* FIX A: setCompletedCourseCodes 제거 — 학점입력창과 체크박스 완전 분리 */
+
+  /* 학기별 입력의 과목과 일치하는 필수과목을 자동으로 체크 (이름 또는 코드 일치)
+     — 추가만 함, 학기 과목 삭제 시에도 체크는 유지(사용자가 직접 해제 가능) */
+  try {
+    if (typeof getCurriculum === 'function' && typeof getRequiredCourses === 'function'
+        && typeof getCompletedCourseCodes === 'function' && typeof setCompletedCourseCodes === 'function') {
+      const userInfo = JSON.parse(localStorage.getItem(USER_INFO_KEY) || '{}');
+      const dept = userInfo.dept || localStorage.getItem('sw_dept');
+      const adm  = userInfo.admissionYear
+        || parseInt(localStorage.getItem('sw_admission_year'), 10)
+        || (userInfo.stu && typeof studentIdToAdmissionYear === 'function' ? studentIdToAdmissionYear(userInfo.stu) : null);
+      if (dept && adm) {
+        const cur = getCurriculum(adm, dept);
+        if (cur) {
+          const req = getRequiredCourses(cur, adm);
+          /* 학기 입력의 코드/이름 셋 (F등급 제외) */
+          const semCodes = new Set();
+          const semNames = new Set();
+          Object.values(h).forEach(arr => {
+            (arr || []).forEach(c => {
+              if (c.grade === 'F') return;
+              if (c.code) semCodes.add(c.code);
+              if (c.name) semNames.add(c.name.trim());
+            });
+          });
+          const completedSet = getCompletedCourseCodes();
+          let autoChecked = 0;
+          req.forEach(c => {
+            const matched = (c.code && semCodes.has(c.code)) ||
+                            (c.name && semNames.has(c.name.trim()));
+            if (!matched) return;
+            const token = c.code || ('@n:' + (c.name || '').trim());
+            if (!completedSet.has(token)) {
+              completedSet.add(token);
+              autoChecked++;
+            }
+          });
+          if (autoChecked > 0) {
+            setCompletedCourseCodes(completedSet);
+          }
+        }
+      }
+    }
+  } catch(e) { console.warn('[auto-check] 필수과목 자동 체크 실패:', e.message); }
 
   /* UI 일괄 갱신 */
   swRenderSemesterPanel();
@@ -32870,28 +32899,78 @@ function _refreshAfterCompletedToggle() {
   }
 }
 
-/* 체크된 필수과목들의 학점 합 — 졸업요건 진척도에 포함하기 위함 */
+/* 체크된 필수과목들의 학점 합 — 졸업요건 진척도에 포함하기 위함 (legacy 호환) */
 function getCompletedRequiredCredits() {
+  if (typeof getCompletedCreditsBy === 'function') {
+    return getCompletedCreditsBy().total;
+  }
+  return 0;
+}
+
+/* 이수 학점 통합 집계 — (1)학기별 입력 + (2)필수과목 체크리스트 두 소스를 dedupe 합산
+   카테고리별 학점, 총 학점, 추천에서 제외할 codes/names 리스트를 한 번에 반환 */
+function getCompletedCreditsBy() {
+  const byCategory = {};
+  const seenCodes = new Set();
+  const seenNames = new Set();
+  const codes = [], names = [];
+  let total = 0;
+
+  function add(code, name, credits, category) {
+    const cr = Number(credits) || 0;
+    if (cr <= 0) return;
+    const n = (name || '').trim();
+    /* 같은 code나 같은 name이 이미 잡혔으면 중복 — 건너뜀 */
+    if (code && seenCodes.has(code)) return;
+    if (n && seenNames.has(n)) return;
+    if (code) { seenCodes.add(code); codes.push(code); }
+    if (n)    { seenNames.add(n);    names.push(n); }
+    byCategory[category] = (byCategory[category] || 0) + cr;
+    total += cr;
+  }
+
+  /* 1. 학기별 수강 과목 입력 (swGetGradeHistory) — F등급은 제외 */
   try {
-    if (typeof getCurriculum !== 'function' || typeof getRequiredCourses !== 'function') return 0;
-    const userInfo = (() => { try { return JSON.parse(localStorage.getItem(USER_INFO_KEY) || '{}'); } catch(_) { return {}; } })();
-    const dept = userInfo.dept || localStorage.getItem('sw_dept');
-    const adm  = userInfo.admissionYear
-      || parseInt(localStorage.getItem('sw_admission_year'), 10)
-      || (userInfo.stu && typeof studentIdToAdmissionYear === 'function' ? studentIdToAdmissionYear(userInfo.stu) : null);
-    if (!dept || !adm) return 0;
-    const cur = getCurriculum(adm, dept);
-    if (!cur) return 0;
-    const req = getRequiredCourses(cur, adm);
-    const completed = getCompletedCourseCodes();
-    let sum = 0;
-    req.forEach(c => {
-      const hit = (c.code && completed.has(c.code)) ||
-                  (c.name && completed.has('@n:' + c.name.trim()));
-      if (hit) sum += Number(c.credits) || 0;
+    const h = (typeof swGetGradeHistory === 'function') ? swGetGradeHistory() : {};
+    Object.values(h).forEach(arr => {
+      (arr || []).forEach(c => {
+        if (c.grade === 'F') return;
+        const cat = c.category || '기타·자유';
+        add(c.code, c.name, c.credits, cat);
+      });
     });
-    return sum;
-  } catch(e) { return 0; }
+  } catch(e) {}
+
+  /* 2. 필수과목 체크리스트 — 학기 입력에 없는 항목만 보강 */
+  try {
+    if (typeof getCurriculum === 'function' && typeof getRequiredCourses === 'function') {
+      const userInfo = JSON.parse(localStorage.getItem(USER_INFO_KEY) || '{}');
+      const dept = userInfo.dept || localStorage.getItem('sw_dept');
+      const adm  = userInfo.admissionYear
+        || parseInt(localStorage.getItem('sw_admission_year'), 10)
+        || (userInfo.stu && typeof studentIdToAdmissionYear === 'function' ? studentIdToAdmissionYear(userInfo.stu) : null);
+      if (dept && adm) {
+        const cur = getCurriculum(adm, dept);
+        if (cur) {
+          const req = getRequiredCourses(cur, adm);
+          const completed = (typeof getCompletedCourseCodes === 'function') ? getCompletedCourseCodes() : new Set();
+          const GROUP_TO_CAT = {
+            '중요핵심교양':'중요핵심교양', '기초교양':'기초교양', '소양교육':'소양교육',
+            '전공기초교양':'전공기초교양', '진로취업':'전공필수(진로취업)', '전공핵심':'전공필수(핵심)',
+          };
+          req.forEach(c => {
+            const checkedByCode = c.code && completed.has(c.code);
+            const checkedByName = c.name && completed.has('@n:' + c.name.trim());
+            if (!checkedByCode && !checkedByName) return;
+            const cat = GROUP_TO_CAT[c.group] || '기타·자유';
+            add(c.code, c.name, c.credits, cat);
+          });
+        }
+      }
+    }
+  } catch(e) {}
+
+  return { byCategory, total, codes, names };
 }
 
 /* 졸업요건 카드의 학점 인풋을 직접 수정했을 때 — 프로필에 저장 + 진척도 즉시 갱신 */
@@ -32914,8 +32993,13 @@ function setCreditCategoryFromGrid(profKey, value) {
   if (typeof _globalToast === 'function') _globalToast('💾 학점 업데이트 — 진척도에 반영됨');
 }
 
-/* 추천 API 요청용 — 체크된 과목을 codes/names로 분리 */
+/* 추천 API 요청용 — 학기 입력 + 체크리스트의 이수 과목 codes/names */
 function getCompletedSubjectListsForRequest() {
+  if (typeof getCompletedCreditsBy === 'function') {
+    const s = getCompletedCreditsBy();
+    return { codes: s.codes, names: s.names };
+  }
+  /* 폴백 */
   const completed = getCompletedCourseCodes();
   const codes = [], names = [];
   completed.forEach(t => {
@@ -33037,29 +33121,14 @@ window._refreshGraduation = async function() {
       if (pctEl) pctEl.textContent = overallPct;
       if (bar)   bar.style.width   = overallPct + '%';
       if (grid) {
-        /* 9개 PDF 카테고리 입력값을 그대로 1:1로 표시 */
-        const p = getCreditProfile();
         const breakdown = preciseReq.breakdown;
-        const progress = {
-          '중요핵심교양':        p.genCore        || 0,
-          '기초교양':            p.genBasic       || 0,
-          '선택교양':            p.genElec        || 0,
-          '소양교육':            p.genEdu         || 0,
-          '전공기초교양':        p.majorBasic     || 0,
-          '전공필수(진로취업)':  p.majorReqCareer || 0,
-          '전공필수(핵심)':      p.majorReqCore   || 0,
-          '전공선택':            p.majorElec      || 0,
-          '일반선택':            p.freeElec       || 0,
-        };
 
-        /* 9개 카테고리 → 프로필 키 매핑 (got 인풋 → setCreditCategoryFromGrid 저장용) */
-        const _nameToKey = {
-          '중요핵심교양':'genCore', '기초교양':'genBasic', '선택교양':'genElec', '소양교육':'genEdu',
-          '전공기초교양':'majorBasic', '전공필수(진로취업)':'majorReqCareer', '전공필수(핵심)':'majorReqCore',
-          '전공선택':'majorElec', '일반선택':'freeElec',
-        };
+        /* 학기별 입력 + 필수과목 체크리스트 통합 집계 */
+        const summary = (typeof getCompletedCreditsBy === 'function') ? getCompletedCreditsBy() : { byCategory: {} };
+        const byCategory = summary.byCategory || {};
+
         grid.innerHTML = Object.entries(breakdown).map(([name, need]) => {
-          const got = Math.round(progress[name] || 0);
+          const got = Math.round(byCategory[name] || 0);
           const pct = need > 0 ? Math.min(100, Math.round(got / need * 100)) : 0;
           const overFlow = got > need;
           const colorBar = overFlow ? 'var(--green)' :
@@ -33068,22 +33137,15 @@ window._refreshGraduation = async function() {
                            pct > 0 ? 'var(--amber)' : 'var(--border)';
           const status = overFlow ? '✅ 초과' : pct >= 100 ? '✅ 완료' : pct > 0 ? `${need - got}학점 부족` : '미이수';
           const statusColor = pct >= 100 ? 'var(--green)' : pct > 0 ? 'var(--amber)' : 'var(--text-muted)';
-          const profKey = _nameToKey[name] || '';
-          /* 학점 숫자를 직접 입력 가능하게 — 변경 시 setCreditCategoryFromGrid 호출 */
-          const gotInput = profKey
-            ? `<input type="number" min="0" max="200" value="${got}" data-prof-key="${profKey}"
-                 onchange="setCreditCategoryFromGrid('${profKey}', this.value)"
-                 onclick="this.select()"
-                 title="클릭해서 직접 수정 — 변경 시 졸업요건에 즉시 반영"
-                 style="width:48px;font-size:16px;font-weight:800;color:var(--text-dark);
-                        border:1px solid var(--border);border-radius:6px;padding:2px 4px;text-align:center;
-                        background:var(--bg-parchment);" />`
-            : `<span>${got}</span>`;
+
+          const gotSpan = `<span title="학기별 수강 과목 입력 또는 필수과목 체크리스트에 추가하면 자동 반영됨"
+                             style="font-size:16px;font-weight:800;color:var(--text-dark);">${got}</span>`;
+
           return `
             <div style="background:var(--white);padding:10px 12px;border-radius:8px;border:1px solid var(--border);">
               <div style="font-size:11px;color:var(--text-soft);">${name}</div>
               <div style="display:flex;align-items:center;gap:4px;margin-top:2px;">
-                ${gotInput}<span style="font-size:11px;color:var(--text-muted);"> / ${need}</span>
+                ${gotSpan}<span style="font-size:11px;color:var(--text-muted);"> / ${need}</span>
               </div>
               <div style="height:3px;background:var(--border);border-radius:99px;margin-top:5px;overflow:hidden;">
                 <div style="height:100%;width:${Math.min(100, pct)}%;background:${colorBar};transition:width .4s;"></div>
