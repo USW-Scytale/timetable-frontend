@@ -3739,92 +3739,75 @@ footer strong { color: var(--text-dark); font-weight: 600; }
   letter-spacing: -.016em;
 }
 
-/* ── 강의평 목록 카드 — rv-pick-card와 동일 구조 ── */
+/* ── 강의평 목록 카드 ── */
 .route-reviews .rv-grid {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
-/* 카드 자체 — rv-pick-card와 완전히 동일 */
 .route-reviews .rv-card {
-  padding: 22px;
-  border-radius: var(--r-lg);
-  border: 1px solid var(--border);
   background: #fff;
-  display: flex;
-  flex-direction: column;
+  border-radius: 16px;
+  padding: 20px 22px;
+  border: 1px solid var(--border);
   cursor: pointer;
   user-select: none;
-  transition: box-shadow .16s;
 }
-.route-reviews .rv-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,.07);
-}
-/* 과목명 + 교수 한 줄 — rv-pick-name 동일 */
+.route-reviews .rv-card:hover { background: #fafbfc; }
 .route-reviews .rv-card-name {
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -.022em;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text-dark);
-  margin-bottom: 6px;
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
+  letter-spacing: -.022em;
+  margin-bottom: 2px;
 }
 .route-reviews .rv-card-prof-tag {
   font-size: 13px;
   font-weight: 400;
   color: var(--text-soft);
-  letter-spacing: -.012em;
+  margin-left: 6px;
 }
-/* 별점 행 — rv-pick-stars 동일 */
 .route-reviews .rv-card-stars {
   font-size: 16px;
   color: #f5a623;
   letter-spacing: 2px;
-  margin-bottom: 6px;
   display: block;
+  margin: 8px 0 4px;
 }
 .route-reviews .rv-card-stars .empty { color: var(--border); }
-/* 평점 숫자 + 개수 */
 .route-reviews .rv-card-avg-row {
   font-size: 13px;
   color: var(--text-soft);
-  margin-bottom: 0;
   letter-spacing: -.012em;
 }
 .route-reviews .rv-card-avg-num {
   font-weight: 700;
   color: var(--blue);
 }
-/* 접기/펼치기 표시 */
 .route-reviews .rv-card-chevron {
+  float: right;
   font-size: 10px;
   color: var(--text-muted);
   transition: transform .2s;
-  margin-left: auto;
-  align-self: flex-start;
+  margin-top: 4px;
 }
 .route-reviews .rv-card.open .rv-card-chevron { transform: rotate(180deg); }
-/* 펼쳐진 리뷰 목록 */
 .route-reviews .rv-card-reviews {
   display: none;
   flex-direction: column;
-  margin-top: 14px;
-  padding-top: 14px;
+  gap: 14px;
+  margin-top: 16px;
+  padding-top: 16px;
   border-top: 1px solid var(--border);
-  gap: 12px;
 }
 .route-reviews .rv-card-reviews.open { display: flex; }
-/* 개별 리뷰 — rv-pick-content 동일 스타일 */
 .route-reviews .rv-rev-item {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 0;
 }
 .route-reviews .rv-rev-item + .rv-rev-item {
-  padding-top: 12px;
+  padding-top: 14px;
   border-top: 1px solid var(--border);
 }
 .route-reviews .rv-rev-stars-row {
@@ -3836,7 +3819,7 @@ footer strong { color: var(--text-dark); font-weight: 600; }
 .route-reviews .rv-rev-content {
   font-size: 14px;
   color: var(--text-soft);
-  line-height: 1.5;
+  line-height: 1.55;
   letter-spacing: -.016em;
 }
 .route-reviews .rv-rev-meta {
@@ -3844,21 +3827,21 @@ footer strong { color: var(--text-dark); font-weight: 600; }
   color: var(--text-muted);
   letter-spacing: -.012em;
 }
-/* 기존 구조 숨김 */
+/* 기존 구조 완전 숨김 */
 .route-reviews .rv-card-head { all: unset; display: contents; }
 .route-reviews .rv-card-info { display: contents; }
-.route-reviews .rv-card-meta-right { display: none; }
-.route-reviews .rv-card-title-row { display: none; }
-.route-reviews .rv-card-star-row { display: none; }
-.route-reviews .rv-card-toggle { display: none; }
-.route-reviews .rv-rev-left { display: none; }
-.route-reviews .rv-rev-body { display: contents; }
-.route-reviews .rv-rev-score-badge { display: none; }
-.route-reviews .rv-rev-stars { display: none; }
-.route-reviews .rv-rev-score { display: none; }
-.route-reviews .rv-rev-star-row { display: none; }
-.route-reviews .rv-rev-score-text { display: none; }
+.route-reviews .rv-card-meta-right,
+.route-reviews .rv-card-title-row,
+.route-reviews .rv-card-star-row,
+.route-reviews .rv-card-toggle,
+.route-reviews .rv-rev-left,
+.route-reviews .rv-rev-score-badge,
+.route-reviews .rv-rev-stars,
+.route-reviews .rv-rev-score,
+.route-reviews .rv-rev-star-row,
+.route-reviews .rv-rev-score-text,
 .route-reviews .rv-rev-stars-inline { display: none; }
+.route-reviews .rv-rev-body { display: contents; }
 
 /* =====================================================================
    CALENDAR
