@@ -5773,7 +5773,22 @@ footer {
   .route-result .hm-compare-card { overflow-x:auto; }
   .hm-score-number { font-size: 54px; }
 }
-  </style>
+  
+/* ===== FIX 1: .hm-solution-card 텍스트 색상 버그 수정 ===== */
+.hm-solution-card,
+.hm-solution-card * { color: #ffffff; }
+.hm-solution-card h3 {
+  color: #ffffff !important;
+  font-size: 22px;
+  letter-spacing: -.035em;
+  margin-bottom: 18px;
+}
+.hm-solution-card .hm-list li { color: #ffffff !important; }
+.hm-solution-card .hm-list li::before {
+  background: var(--yellow-main, #FDE047);
+  box-shadow: 0 0 0 6px rgba(253,224,71,.18);
+}
+</style>
 
   <style id="suwonmate-motion-ui">
 /* =====================================================================
@@ -29786,6 +29801,25 @@ renderRooms();
 setInterval(() => { updateHero(); }, 30000);
 
 
+
+/* FIX 3: 졸업요건 페이지 진입 시 서버에서 이수과목 동기화 */
+async function syncCompletedCoursesFromServer() {
+  if (typeof getToken !== 'function' || !getToken()) return;
+  try {
+    const r = await fetch(getBaseURL() + '/v1/user/completed-courses', {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!r.ok) return;
+    const data = await r.json();
+    const codes = data.codes || [];
+    if (codes.length > 0) {
+      try { localStorage.setItem(COMPLETED_COURSES_KEY, JSON.stringify(codes)); } catch(e) {}
+      if (typeof swAggregateAndRefresh === 'function') {
+        try { swAggregateAndRefresh(); } catch(_) {}
+      }
+    }
+  } catch(e) {}
+}
 /* ====== route-graduation script ====== */
 /* ─ localStorage에서 학생 정보 읽기 ─ */
 const savedCollege  = localStorage.getItem('sw_college') || '지능형SW융합대학';
@@ -30776,6 +30810,9 @@ function swAggregateAndRefresh() {
 /* doLogin 직후 자동 갱신 + 졸업 페이지 진입 시 자동 갱신 — 별도 hook */
 window.addEventListener('hashchange', () => {
   if (location.hash === '#/graduation') {
+    syncCompletedCoursesFromServer().then(() => {
+      try { swAggregateAndRefresh(); } catch(_) {}
+    });
     setTimeout(() => {
       try { swAggregateAndRefresh(); } catch(e) {}
     }, 50);
@@ -32731,7 +32768,18 @@ function getCompletedCourseCodes() {
   catch(e) { return new Set(); }
 }
 function setCompletedCourseCodes(set) {
+  /* FIX 3: localStorage + 서버 API 이중 저장 */
   try { localStorage.setItem(COMPLETED_COURSES_KEY, JSON.stringify([...set])); } catch(e) {}
+  if (typeof getToken === 'function' && getToken()) {
+    fetch(getBaseURL() + '/v1/user/completed-courses', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({ codes: [...set] })
+    }).catch(() => {});
+  }
 }
 function toggleCompletedCourse(code) {
   const s = getCompletedCourseCodes();
@@ -32757,6 +32805,10 @@ function _refreshAfterCompletedToggle() {
   /* 학번-전공 졸업요건 카드의 진척도 재계산 */
   if (typeof window._refreshGraduation === 'function') {
     try { window._refreshGraduation(); } catch(e) {}
+  }
+  /* FIX 2b: 체크 즉시 졸업요건 갱신 */
+  if (typeof swAggregateAndRefresh === 'function') {
+    try { swAggregateAndRefresh(); } catch(_) {}
   }
 }
 
