@@ -7250,10 +7250,12 @@ textarea:focus {
 
 <div class="course-section">
   <div class="cs-title">과목 목록</div>
-  <table class="course-table">
-    <thead><tr><th>과목명</th><th>교수</th><th>구분</th><th>학점</th><th>시간</th><th>이동</th><th>강의실</th></tr></thead>
-    <tbody id="courseBody"></tbody>
-  </table>
+  <div class="course-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+    <table class="course-table" style="min-width:640px;">
+      <thead><tr><th>과목명</th><th>교수</th><th>구분</th><th>학점</th><th>시간</th><th>이동</th><th>강의실</th></tr></thead>
+      <tbody id="courseBody"></tbody>
+    </table>
+  </div>
 </div>
 
 <div class="action-bar">
