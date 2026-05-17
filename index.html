@@ -5294,10 +5294,7 @@ button[class*="primary"]:active {
 .route-mytimetable .mt-empty,
 [class*="-card"]:not(.route-index .card):not(.hm-solution-card):not(.hm-score-panel),
 [class*="-panel"]:not(.hm-score-panel) {
-  border-radius: var(--r-lg) !important;
-  border: 2px solid var(--border) !important;
   background: rgba(255,255,255,.92) !important;
-  box-shadow: var(--shadow-sm) !important;
 }
 [data-theme="dark"] .route-index .week-card,
 [data-theme="dark"] .route-index .dd-card,
@@ -5312,17 +5309,7 @@ button[class*="primary"]:active {
   background: rgba(15,30,56,.92) !important;
 }
 
-/* 강의평 — 바깥 카드만 보더, 안쪽 요소는 제거 */
-.route-reviews .rv-card [class*="-card"],
-.route-reviews .rv-pick-card [class*="-card"] {
-  border: none !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-.route-reviews .rv-card .rv-card-reviews {
-  border-top: 1px solid var(--border) !important;
-}
+
 
 .route-input .card-title-text,
 .route-option .card-title-text,
