@@ -5312,6 +5312,18 @@ button[class*="primary"]:active {
   background: rgba(15,30,56,.92) !important;
 }
 
+/* 강의평 — 바깥 카드만 보더, 안쪽 요소는 제거 */
+.route-reviews .rv-card [class*="-card"],
+.route-reviews .rv-pick-card [class*="-card"] {
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.route-reviews .rv-card .rv-card-reviews {
+  border-top: 1px solid var(--border) !important;
+}
+
 .route-input .card-title-text,
 .route-option .card-title-text,
 .route-index .week-head-title,
