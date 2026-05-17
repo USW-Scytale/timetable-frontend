@@ -6198,24 +6198,9 @@ textarea:focus {
         <div class="auth-logo-label"><em>수원대</em> 스마트 시간표</div>
       </div>
 
-      <!-- 서버 연결 상태 / 설정 -->
+      <!-- 서버 연결 상태 -->
       <div id="authServerBar" style="border-radius:10px;padding:10px 14px;font-size:12px;margin-bottom:14px;text-align:center;background:#F0FDF4;border:1px solid #A7F3D0;color:#065F46;">
         🟢 <strong id="authServerLabel">서버 확인 중…</strong>
-        <span style="margin-left:8px;opacity:.7;">|</span>
-        <a onclick="showServerConfig()" style="margin-left:8px;cursor:pointer;text-decoration:underline;color:inherit;">서버 설정</a>
-      </div>
-
-      <!-- 서버 주소 설정 패널 (토글) -->
-      <div id="serverConfigPanel" style="display:none;background:#F8FAFC;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;font-size:13px;">
-        <div style="font-weight:700;margin-bottom:8px;">🔧 백엔드 서버 주소</div>
-        <input id="serverUrlInput" type="url" placeholder="http://localhost:8000/v1"
-          style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;"/>
-        <div style="display:flex;gap:8px;margin-top:8px;">
-          <button onclick="applyServerUrl()" style="flex:1;padding:7px;background:#2563EB;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">적용</button>
-          <button onclick="resetServerUrl()" style="padding:7px 12px;background:#fff;color:#374151;border:1px solid #D1D5DB;border-radius:8px;cursor:pointer;font-size:13px;">초기화</button>
-          <button onclick="document.getElementById('serverConfigPanel').style.display='none'" style="padding:7px 12px;background:#fff;color:#374151;border:1px solid #D1D5DB;border-radius:8px;cursor:pointer;font-size:13px;">닫기</button>
-        </div>
-        <div style="margin-top:8px;font-size:11px;color:var(--text-soft);">백엔드를 직접 배포한 경우 해당 URL을 입력하세요. 비워두면 localhost:8000을 사용합니다.</div>
       </div>
 
       <div class="auth-card">
@@ -32958,15 +32943,9 @@ window.__AUTH_STORAGE_READY = true;
 /* ────────────────────────────────────────────────────────
    API CLIENT
 ─────────────────────────────────────────────────────── */
-const _DEFAULT_BACKEND = 'http://localhost:8000';
-const BACKEND_URL_KEY   = 'sw_backend_url';
+const _DEFAULT_BACKEND = 'https://brass-likelihood-besides-flux.trycloudflare.com';
 function getBaseUrl() {
-  try { return localStorage.getItem(BACKEND_URL_KEY) || _DEFAULT_BACKEND; } catch(e) { return _DEFAULT_BACKEND; }
-}
-function setBaseUrl(url) {
-  const clean = (url || '').replace(/\/+$/, '').trim();
-  try { if (clean) localStorage.setItem(BACKEND_URL_KEY, clean); else localStorage.removeItem(BACKEND_URL_KEY); } catch(e) {}
-  _initCampusData();
+  return _DEFAULT_BACKEND;
 }
 
 const TOKEN_KEY     = 'sw_access_token';
@@ -33341,50 +33320,24 @@ function _populateSignupDept() {
   if (prev) sel.value = prev;
 }
 
-/* ── 서버 설정 UI ── */
-function showServerConfig() {
-  const panel = document.getElementById('serverConfigPanel');
-  const input = document.getElementById('serverUrlInput');
-  if (input) input.value = getBaseUrl();
-  if (panel) panel.style.display = panel.style.display === 'none' ? '' : 'none';
-}
-function applyServerUrl() {
-  const val = (document.getElementById('serverUrlInput')?.value || '').trim();
-  setBaseUrl(val || '');
-  document.getElementById('serverConfigPanel').style.display = 'none';
-  _updateServerBar();
-}
-function resetServerUrl() {
-  setBaseUrl('');
-  const input = document.getElementById('serverUrlInput');
-  if (input) input.value = _DEFAULT_BACKEND;
-  _updateServerBar();
-}
 async function _updateServerBar() {
   const bar   = document.getElementById('authServerBar');
   const label = document.getElementById('authServerLabel');
   if (!bar || !label) return;
 
-  /* 헬스체크 결과를 단일 진실로 사용 — localhost/배포 구분 없이
-     실제로 응답하면 연결됨, 아니면 서버 설정 안내. */
   label.textContent = '서버 확인 중…';
   bar.style.background = '#F8FAFC'; bar.style.borderColor = '#E2E8F0'; bar.style.color = '#64748B';
   const base = getBaseUrl();
   const isLocal = /(localhost|127\.0\.0\.1)/.test(base);
   try {
-    const ngrokHdr = base.includes('ngrok') ? { 'ngrok-skip-browser-warning': 'true' } : {};
-    const r = await fetch(base.replace(/\/v1$/, '') + '/health', { headers: ngrokHdr, signal: AbortSignal.timeout(3000) });
+    const r = await fetch(base.replace(/\/v1$/, '') + '/health', { signal: AbortSignal.timeout(3000) });
     if (r.ok) {
       bar.style.background = '#F0FDF4'; bar.style.borderColor = '#A7F3D0'; bar.style.color = '#065F46';
       label.textContent = isLocal ? '🟢 서버 연결됨 (로컬)' : '🟢 서버 연결됨';
     } else { throw new Error('non-ok'); }
   } catch(_) {
     bar.style.background = '#FEF3C7'; bar.style.borderColor = '#FCD34D'; bar.style.color = '#92400E';
-    label.textContent = '🔌 서버 연결 안 됨 — "서버 설정"에서 주소를 확인하세요';
-    const panel = document.getElementById('serverConfigPanel');
-    const input = document.getElementById('serverUrlInput');
-    if (panel) panel.style.display = '';
-    if (input && !input.value) input.value = base;
+    label.textContent = '🔌 서버 연결 안 됨 — 잠시 후 다시 시도해 주세요';
   }
 }
 
