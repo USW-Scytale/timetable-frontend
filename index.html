@@ -29821,7 +29821,7 @@ setInterval(() => { updateHero(); }, 30000);
 async function syncCompletedCoursesFromServer() {
   if (typeof getToken !== 'function' || !getToken()) return;
   try {
-    const r = await fetch(getBaseURL() + '/v1/user/completed-courses', {
+    const r = await fetch(getBaseUrl() + '/v1/user/completed-courses', {
       headers: { 'Authorization': 'Bearer ' + getToken() }
     });
     if (!r.ok) return;
@@ -32832,7 +32832,7 @@ function setCompletedCourseCodes(set) {
   /* FIX 3: localStorage + 서버 API 이중 저장 */
   try { localStorage.setItem(COMPLETED_COURSES_KEY, JSON.stringify([...set])); } catch(e) {}
   if (typeof getToken === 'function' && getToken()) {
-    fetch(getBaseURL() + '/v1/user/completed-courses', {
+    fetch(getBaseUrl() + '/v1/user/completed-courses', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
