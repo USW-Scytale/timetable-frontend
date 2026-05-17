@@ -7606,6 +7606,46 @@ textarea:focus {
     <div class="checklist-grid" id="checklistGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;"></div>
   </div>
 
+  <!-- 선택 과목 이수 현황 (선택교양 / 전공선택) -->
+  <div style="margin-top:18px;">
+    <div class="section-header">
+      <div class="section-title">📚 선택 과목 이수 현황</div>
+      <div class="section-sub">＋ 버튼으로 들은 선택교양·전공선택 과목을 추가하면 졸업요건/추천에 즉시 반영돼요</div>
+    </div>
+    <div id="electiveSections" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <!-- 선택교양 패널 -->
+      <div class="check-card" style="background:var(--bg-parchment);border:1px solid var(--border);border-radius:12px;padding:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div>
+            <div style="font-size:13px;font-weight:800;color:var(--blue);">📘 선택교양</div>
+            <div id="elecGenProgressText" style="font-size:11px;color:var(--text-soft);margin-top:2px;">0 / 18 학점 · 0%</div>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:var(--blue);" id="elecGenCountText">0 과목</div>
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:10px;">
+          <div id="elecGenProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .4s;"></div>
+        </div>
+        <div id="elecGenList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div>
+        <button onclick="openElectivePicker('balance_general')" style="width:100%;padding:10px;background:var(--blue-bg);border:1px dashed var(--blue);border-radius:10px;color:var(--blue);font-weight:700;font-size:13px;cursor:pointer;">＋ 선택교양 과목 추가</button>
+      </div>
+      <!-- 전공선택 패널 -->
+      <div class="check-card" style="background:var(--bg-parchment);border:1px solid var(--border);border-radius:12px;padding:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div>
+            <div style="font-size:13px;font-weight:800;color:#7C3AED;">📕 전공선택</div>
+            <div id="elecMajProgressText" style="font-size:11px;color:var(--text-soft);margin-top:2px;">0 / 48 학점 · 0%</div>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:#7C3AED;" id="elecMajCountText">0 과목</div>
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:10px;">
+          <div id="elecMajProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#7C3AED,var(--green));transition:width .4s;"></div>
+        </div>
+        <div id="elecMajList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div>
+        <button onclick="openElectivePicker('major_elective')" style="width:100%;padding:10px;background:#F3E8FF;border:1px dashed #7C3AED;border-radius:10px;color:#7C3AED;font-weight:700;font-size:13px;cursor:pointer;">＋ 전공선택 과목 추가</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 추천 과목 -->
   <div>
     <div class="section-header">
@@ -7918,6 +7958,21 @@ textarea:focus {
       <div class="m-actions">
         <button class="m-btn ghost" onclick="closeModal('modalReview')">취소</button>
         <button class="m-btn primary" onclick="submitReview()">등록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 선택과목 추가 모달 (선택교양 / 전공선택) -->
+  <div class="modal-backdrop" id="modalElectivePicker" onclick="if(event.target===this)closeModal('modalElectivePicker')">
+    <div class="modal-box" style="max-width:600px;">
+      <h3 id="electivePickerTitle">과목 추가</h3>
+      <div class="modal-sub" id="electivePickerSub">DB에 등록된 과목 중 선택해서 추가하세요.</div>
+      <div class="m-field" style="margin-bottom:10px;">
+        <input id="electivePickerSearch" placeholder="과목명/교수명으로 검색..." autocomplete="off"/>
+      </div>
+      <div id="electivePickerList" style="max-height:420px;overflow-y:auto;padding:2px;"></div>
+      <div class="m-actions">
+        <button class="m-btn ghost" onclick="closeModal('modalElectivePicker')">닫기</button>
       </div>
     </div>
   </div>
@@ -32707,16 +32762,21 @@ window._refreshCheckPage = function() {
   const grade= userInfo.grade || localStorage.getItem('sw_grade') || '3';
 
   const profile = (typeof getCreditProfile === 'function') ? getCreditProfile() : {};
-  const total = profile.totalDone || 0;
+  /* 통합 집계: 학기 입력 + 필수과목 체크 + 선택교양/전공선택 추가 (overflow 일반선택 자동이동 포함) */
+  const summary = (typeof getCompletedCreditsBy === 'function') ? getCompletedCreditsBy() : { byCategory: {}, total: 0 };
+  const total = summary.total;
+  const byCat = summary.byCategory || {};
   const gpa = profile.gpa || 0;
   const gradReq = (typeof getGradReqByStudent === 'function') ? getGradReqByStudent(yr, dept) : null;
   const totalReq = gradReq?.total || 130;
   const pct = Math.min(100, Math.round(total / totalReq * 100));
 
-  /* 학기 수 + 과목 수 */
+  /* 학기 수 + 과목 수 (학기 입력 + 선택과목 직접 추가 통합) */
   const h = (typeof swGetGradeHistory === 'function') ? swGetGradeHistory() : {};
   const semCount = Object.keys(h).length;
-  const courseCount = Object.values(h).reduce((s, arr) => s + arr.length, 0);
+  const semCourseCount = Object.values(h).reduce((s, arr) => s + arr.length, 0);
+  const selectedCount = (typeof getSelectedElectives === 'function') ? getSelectedElectives().length : 0;
+  const courseCount = semCourseCount + selectedCount;
 
   /* 필수 과목 진척도 (교양 포함) */
   const curriculum = (typeof getCurriculum === 'function') ? getCurriculum(yr, dept) : null;
@@ -32724,6 +32784,8 @@ window._refreshCheckPage = function() {
   const completed = (typeof getCompletedCourseCodes === 'function') ? getCompletedCourseCodes() : new Set();
   const completedNames = new Set();
   try { Object.values(swGetGradeHistory()).forEach(arr => (arr||[]).forEach(c => c.name && completedNames.add(c.name.trim()))); } catch(_) {}
+  /* 선택과목 직접 추가분도 이름 매칭에 포함 */
+  try { (getSelectedElectives() || []).forEach(c => c.name && completedNames.add(c.name.trim())); } catch(_) {}
   const reqDone = required.filter(c => (c.code && completed.has(c.code)) || (c.name && completedNames.has(c.name.trim()))).length;
 
   card.innerHTML = `
@@ -32771,7 +32833,7 @@ window._refreshCheckPage = function() {
 
     <div style="background:var(--blue-bg);border-left:3px solid var(--blue);padding:10px 14px;border-radius:8px;font-size:12px;color:var(--text-dark);line-height:1.6;">
       💡 이 정보를 바탕으로 <strong>미이수 필수과목 우선</strong>, <strong>부족한 카테고리 보충</strong>을 고려해 시간표를 추천합니다.
-      ${semCount === 0 ? '<br><span style="color:var(--red);font-weight:700;">⚠️ 아직 입력한 학기가 없어요. 졸업요건에서 수강이력을 먼저 등록해주세요.</span>' : ''}
+      ${courseCount === 0 ? '<br><span style="color:var(--red);font-weight:700;">⚠️ 아직 입력한 과목이 없어요. 졸업요건에서 학기/선택과목을 먼저 등록해주세요.</span>' : ''}
     </div>
   `;
 };
@@ -32988,6 +33050,17 @@ function getCompletedCreditsBy() {
     });
   } catch(e) {}
 
+  /* 1.5 선택 과목 이수 현황 — 사용자가 직접 추가한 선택교양/전공선택 */
+  try {
+    const selected = (typeof getSelectedElectives === 'function') ? getSelectedElectives() : [];
+    selected.forEach(c => {
+      const cat = c.type === 'balance_general' ? '선택교양'
+                : c.type === 'major_elective' ? '전공선택'
+                : '기타·자유';
+      add(c.code, c.name, c.credits, cat);
+    });
+  } catch(e) {}
+
   /* 2. 필수과목 체크리스트 — 학기 입력에 없는 항목만 보강 */
   try {
     if (typeof getCurriculum === 'function' && typeof getRequiredCourses === 'function') {
@@ -33017,6 +33090,23 @@ function getCompletedCreditsBy() {
     }
   } catch(e) {}
 
+  /* 3. 선택교양/전공선택 초과분 → 일반선택으로 자동 이동
+        (학점 총합은 유지, 카테고리만 재분배) */
+  try {
+    const needs = (typeof _getElectiveNeeds === 'function')
+      ? _getElectiveNeeds() : { balance_general: 18, major_elective: 48 };
+    const balOver = Math.max(0, (byCategory['선택교양'] || 0) - needs.balance_general);
+    if (balOver > 0) {
+      byCategory['선택교양'] -= balOver;
+      byCategory['일반선택'] = (byCategory['일반선택'] || 0) + balOver;
+    }
+    const majOver = Math.max(0, (byCategory['전공선택'] || 0) - needs.major_elective);
+    if (majOver > 0) {
+      byCategory['전공선택'] -= majOver;
+      byCategory['일반선택'] = (byCategory['일반선택'] || 0) + majOver;
+    }
+  } catch(e) {}
+
   return { byCategory, total, codes, names };
 }
 
@@ -33039,6 +33129,288 @@ function setCreditCategoryFromGrid(profKey, value) {
   }
   if (typeof _globalToast === 'function') _globalToast('💾 학점 업데이트 — 진척도에 반영됨');
 }
+
+/* ====================================================================
+   📚 선택 과목 이수 현황 (선택교양 / 전공선택) — 사용자가 직접 추가
+   ==================================================================== */
+const SELECTED_ELECTIVES_KEY = () => 'sw_selected_electives_' + (getCurrentUser()?.id || 'guest');
+
+function getSelectedElectives() {
+  try { return JSON.parse(localStorage.getItem(SELECTED_ELECTIVES_KEY()) || '[]'); }
+  catch(e) { return []; }
+}
+function setSelectedElectives(arr) {
+  try { localStorage.setItem(SELECTED_ELECTIVES_KEY(), JSON.stringify(arr)); } catch(e) {}
+}
+
+function _getElectiveNeeds() {
+  try {
+    const userInfo = JSON.parse(localStorage.getItem(USER_INFO_KEY) || '{}');
+    const dept = userInfo.dept || localStorage.getItem('sw_dept');
+    const adm  = userInfo.admissionYear
+      || parseInt(localStorage.getItem('sw_admission_year'), 10)
+      || (userInfo.stu && typeof studentIdToAdmissionYear === 'function' ? studentIdToAdmissionYear(userInfo.stu) : null);
+    if (typeof getGradReqByStudent === 'function' && dept && adm) {
+      const req = getGradReqByStudent(adm, dept);
+      if (req && req.breakdown) {
+        return {
+          balance_general: Number(req.breakdown['선택교양'] || 0) || 18,
+          major_elective:  Number(req.breakdown['전공선택'] || 0) || 48,
+        };
+      }
+    }
+  } catch(e) {}
+  return { balance_general: 18, major_elective: 48 };
+}
+
+/* 두 소스(선택과목 직접 추가 + 학기별 입력) 통합 */
+function _collectElectiveItems(category) {
+  const categoryName = category === 'balance_general' ? '선택교양' : '전공선택';
+  const fromSelected = (getSelectedElectives() || [])
+    .filter(c => c.type === category)
+    .map(c => ({ ...c, _source: 'selected' }));
+  const fromSemester = [];
+  try {
+    const h = (typeof swGetGradeHistory === 'function') ? swGetGradeHistory() : {};
+    Object.values(h).forEach(arr => {
+      (arr || []).forEach(c => {
+        if (c.grade === 'F') return;
+        if (c.category === categoryName) fromSemester.push({ ...c, _source: 'semester' });
+      });
+    });
+  } catch(e) {}
+  /* dedupe: 같은 code 또는 같은 name이면 중복 — 학기 우선(먼저 들어감) */
+  const seenC = new Set(), seenN = new Set(), out = [];
+  for (const it of [...fromSemester, ...fromSelected]) {
+    const c = it.code || '';
+    const n = (it.name || '').trim();
+    if (c && seenC.has(c)) continue;
+    if (n && seenN.has(n)) continue;
+    if (c) seenC.add(c);
+    if (n) seenN.add(n);
+    out.push(it);
+  }
+  return out;
+}
+
+function renderElectiveSections() {
+  const needs = _getElectiveNeeds();
+  const balance = _collectElectiveItems('balance_general');
+  const major   = _collectElectiveItems('major_elective');
+  _renderElectivePanelOne('elecGenList', 'elecGenProgressText', 'elecGenProgressBar', 'elecGenCountText',
+                          balance, needs.balance_general, 'balance_general');
+  _renderElectivePanelOne('elecMajList', 'elecMajProgressText', 'elecMajProgressBar', 'elecMajCountText',
+                          major,   needs.major_elective,  'major_elective');
+}
+
+function _renderElectivePanelOne(listId, txtId, barId, countId, items, need, category) {
+  const list = document.getElementById(listId);
+  if (!list) return;
+
+  /* 누적 학점 기준으로 overflow(일반선택) 표시 — 필요량 채워진 후 들어온 과목은 일반선택으로 카운트됨 */
+  let cum = 0;
+  items.forEach(c => {
+    c._overflow = need > 0 && cum >= need;
+    cum += Number(c.credits) || 0;
+  });
+
+  const total = items.reduce((s, c) => s + (Number(c.credits) || 0), 0);
+  const inCategory = Math.min(total, need);   /* 카테고리에 들어간 학점 (need 이하) */
+  const pct = need > 0 ? Math.min(100, Math.round(inCategory / need * 100)) : 0;
+
+  const txt = document.getElementById(txtId);
+  if (txt) txt.textContent = `${inCategory} / ${need} 학점 · ${pct}%`;
+  const bar = document.getElementById(barId);
+  if (bar) bar.style.width = pct + '%';
+  const cnt = document.getElementById(countId);
+  if (cnt) cnt.textContent = `${items.length} 과목`;
+
+  if (!items.length) {
+    list.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:14px 0;font-size:12px;">아직 추가한 과목이 없어요</div>`;
+    return;
+  }
+
+  list.innerHTML = items.map((c) => {
+    const safeName = escapeHTML(c.name || '');
+    const safeProf = escapeHTML(c.professor || '');
+    const overflowTag = c._overflow
+      ? '<span style="display:inline-block;padding:1px 6px;background:#FEF3C7;color:#92400E;font-size:9px;font-weight:700;border-radius:99px;margin-left:6px;vertical-align:middle;">일반선택</span>'
+      : '';
+    const semTag = c._source === 'semester'
+      ? '<span style="display:inline-block;padding:1px 6px;background:#E0E7FF;color:#4338CA;font-size:9px;font-weight:700;border-radius:99px;margin-left:6px;vertical-align:middle;" title="학기별 수강 과목 입력에서 추가됨">📚 학기</span>'
+      : '';
+    /* 학기에서 가져온 건 학기 패널에서 제거하세요 */
+    const removeBtn = c._source === 'semester'
+      ? `<span title="이 과목은 학기별 입력에 있어요. 학기 패널에서 삭제하세요." style="margin-left:8px;color:var(--text-muted);font-size:11px;padding:4px 6px;">📚</span>`
+      : `<button data-remove-key="${escapeHTML(c.course_id || (c.name+'|'+c.professor))}" data-category="${category}"
+                 onclick="_removeElectiveFromBtn(this)" title="제거"
+                 style="margin-left:8px;background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:4px 6px;">✕</button>`;
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--white);border:1px solid ${c._overflow?'#FDE68A':'var(--border)'};border-radius:8px;">
+        <div style="min-width:0;flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--text-dark);">${safeName}${overflowTag}${semTag}</div>
+          <div style="font-size:11px;color:var(--text-soft);margin-top:2px;">${safeProf} · ${c.credits || 0}학점</div>
+        </div>
+        ${removeBtn}
+      </div>`;
+  }).join('');
+}
+
+function _removeElectiveFromBtn(btn) {
+  const key = btn.getAttribute('data-remove-key');
+  const cat = btn.getAttribute('data-category');
+  if (key && cat) removeSelectedElective(cat, key);
+}
+
+function removeSelectedElective(category, key) {
+  const selected = getSelectedElectives();
+  const idx = selected.findIndex(c => (c.course_id || (c.name+'|'+c.professor)) === key && c.type === category);
+  if (idx < 0) return;
+  const item = selected[idx];
+  if (!confirm(`${item.name} 제거할까요?`)) return;
+  selected.splice(idx, 1);
+  setSelectedElectives(selected);
+  renderElectiveSections();
+  if (typeof window._refreshGraduation === 'function') {
+    try { window._refreshGraduation(); } catch(e) {}
+  }
+  if (typeof updateGraduationSummary === 'function') updateGraduationSummary();
+}
+
+let _electivePickerCategory = '';
+let _electivePickerCache = [];
+
+async function openElectivePicker(category) {
+  _electivePickerCategory = category;
+  const title = category === 'balance_general' ? '📘 선택교양 과목 추가' : '📕 전공선택 과목 추가';
+  const sub = category === 'major_elective'
+    ? '현재 학생 전공의 전공선택 과목만 표시됩니다.'
+    : 'DB의 모든 선택교양 과목 중에서 검색·선택하세요.';
+  document.getElementById('electivePickerTitle').textContent = title;
+  document.getElementById('electivePickerSub').textContent = sub;
+  document.getElementById('electivePickerSearch').value = '';
+  document.getElementById('electivePickerList').innerHTML =
+    '<div style="text-align:center;padding:24px;color:var(--text-soft);">불러오는 중...</div>';
+  openModal('modalElectivePicker');
+
+  if (!(typeof getToken === 'function' && getToken())) {
+    document.getElementById('electivePickerList').innerHTML =
+      '<div style="text-align:center;padding:24px;color:var(--red);">로그인 후 이용해주세요</div>';
+    return;
+  }
+
+  try {
+    /* 백엔드 size 최대 50 → 여러 페이지 합쳐서 최대 ~200개 가져옴 */
+    const dept = (() => {
+      try { return JSON.parse(localStorage.getItem(USER_INFO_KEY)||'{}').dept || localStorage.getItem('sw_dept') || ''; }
+      catch(e) { return ''; }
+    })();
+    let items = [];
+    for (let page = 1; page <= 4; page++) {
+      const params = { type: category, size: 50, page };
+      if (category === 'major_elective' && dept) params.department = dept;
+      const res = await api.searchCourses(params);
+      const got = (res && res.data && res.data.items) ? res.data.items : [];
+      if (!got.length) break;
+      items.push(...got);
+      if (got.length < 50) break;
+    }
+    /* 같은 과목명+교수 중복(분반) 제거 */
+    const seen = new Set();
+    items = items.filter(c => {
+      const k = (c.name||'') + '|' + (c.professor||'');
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+    _electivePickerCache = items;
+    _renderElectivePickerList();
+  } catch(e) {
+    document.getElementById('electivePickerList').innerHTML =
+      `<div style="text-align:center;padding:24px;color:var(--red);">불러올 수 없습니다: ${escapeHTML(e.message || '오류')}</div>`;
+  }
+}
+
+function _renderElectivePickerList() {
+  const list = document.getElementById('electivePickerList');
+  if (!list) return;
+  const q = (document.getElementById('electivePickerSearch')?.value || '').trim().toLowerCase();
+  const items = q
+    ? _electivePickerCache.filter(c =>
+        (c.name || '').toLowerCase().includes(q) || (c.professor || '').toLowerCase().includes(q))
+    : _electivePickerCache;
+  if (!items.length) {
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-soft);">검색 결과가 없습니다</div>';
+    return;
+  }
+  const added = new Set(getSelectedElectives().map(c => c.course_id || (c.name+'|'+c.professor)));
+  list.innerHTML = items.map(c => {
+    const key = c.course_id || (c.name+'|'+c.professor);
+    const isAdded = added.has(key);
+    const safe = JSON.stringify({
+      course_id:c.course_id, subject_code:c.subject_code, name:c.name,
+      professor:c.professor, credits:c.credits, type:c.type
+    }).replace(/'/g,"\\'").replace(/"/g, '&quot;');
+    return `
+      <div ${isAdded ? '' : `onclick="addElectiveFromAttr(this)"`} data-course="${safe}"
+           style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:${isAdded?'default':'pointer'};background:${isAdded?'var(--bg-parchment)':'var(--white)'};opacity:${isAdded?'0.55':'1'};transition:background .12s;"
+           onmouseover="${isAdded?'':"this.style.background='var(--blue-bg)'"}"
+           onmouseout="${isAdded?'':"this.style.background='var(--white)'"}">
+        <div style="min-width:0;flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--text-dark);">${escapeHTML(c.name||'')}</div>
+          <div style="font-size:11px;color:var(--text-soft);margin-top:2px;">${escapeHTML(c.professor||'')} · ${c.credits||0}학점</div>
+        </div>
+        ${isAdded
+          ? '<span style="font-size:11px;color:var(--green);font-weight:700;margin-left:8px;">✓ 추가됨</span>'
+          : '<span style="font-size:18px;color:var(--blue);font-weight:700;margin-left:8px;">＋</span>'}
+      </div>`;
+  }).join('');
+}
+
+/* 클릭 핸들러 — data-course 속성에서 과목 정보 파싱해서 추가 */
+function addElectiveFromAttr(el) {
+  try {
+    const raw = el.getAttribute('data-course');
+    const course = JSON.parse(raw.replace(/&quot;/g, '"'));
+    _doAddElective(course);
+  } catch(e) { console.warn('[addElective] parse fail', e); }
+}
+
+function _doAddElective(course) {
+  if (!course || !course.name) return;
+  const selected = getSelectedElectives();
+  const key = course.course_id || (course.name+'|'+course.professor);
+  if (selected.some(c => (c.course_id || (c.name+'|'+c.professor)) === key)) {
+    if (typeof _globalToast === 'function') _globalToast('이미 추가된 과목입니다');
+    return;
+  }
+  selected.push({
+    course_id: course.course_id,
+    code: course.subject_code,
+    name: course.name,
+    professor: course.professor || '',
+    credits: Number(course.credits) || 0,
+    type: course.type,
+  });
+  setSelectedElectives(selected);
+  renderElectiveSections();
+  _renderElectivePickerList();
+  if (typeof window._refreshGraduation === 'function') {
+    try { window._refreshGraduation(); } catch(e) {}
+  }
+  if (typeof updateGraduationSummary === 'function') updateGraduationSummary();
+  if (typeof _globalToast === 'function') _globalToast(`✅ ${course.name} 추가됨`);
+}
+
+/* (구버전 removeElective는 _removeElectiveFromBtn + removeSelectedElective로 대체됨) */
+
+/* 모달 검색 인풋 디바운스 */
+document.addEventListener('input', e => {
+  if (e.target && e.target.id === 'electivePickerSearch') {
+    clearTimeout(window._elecSearchT);
+    window._elecSearchT = setTimeout(_renderElectivePickerList, 150);
+  }
+});
 
 /* 추천 API 요청용 — 학기 입력 + 체크리스트의 이수 과목 codes/names */
 function getCompletedSubjectListsForRequest() {
@@ -33101,6 +33473,8 @@ window._refreshGraduation = async function() {
   try { swRenderSemesterPanel?.(); } catch(e) {}
   /* 필수 과목 체크리스트 갱신 (학번/학과 정보 변경 즉시 반영) */
   try { renderChecklist?.(); } catch(e) {}
+  /* 선택 과목 이수 현황 갱신 (선택교양/전공선택 추가분) */
+  try { renderElectiveSections?.(); } catch(e) {}
   /* 학점 카테고리 합계 표시 갱신 */
   try { renderGradeCreditEntry?.(); } catch(e) {}
   /* 추천 과목 갱신 */
