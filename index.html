@@ -5289,8 +5289,8 @@ button[class*="primary"]:active {
 .route-result .tt-card,
 .route-mytimetable .mt-card,
 .route-mytimetable .mt-empty,
-[class*="-card"]:not(.route-index .card),
-[class*="-panel"] {
+[class*="-card"]:not(.route-index .card):not(.hm-solution-card):not(.hm-score-panel),
+[class*="-panel"]:not(.hm-score-panel) {
   border-radius: var(--r-lg) !important;
   border: 2px solid var(--border) !important;
   background: rgba(255,255,255,.92) !important;
@@ -7818,11 +7818,14 @@ textarea:focus {
       <div class="m-row">
         <div class="m-field">
           <label>수업명</label>
-          <input id="rvCourse" placeholder="예) 머신러닝1"/>
+          <input id="rvCourse" placeholder="예) 머신러닝1" list="rvCourseOptions" autocomplete="off"/>
+          <datalist id="rvCourseOptions"></datalist>
+          <span class="m-hint" id="rvCourseHint" style="font-size:11px;color:var(--text-soft);margin-top:4px;display:block;">DB에 등록된 강의만 작성할 수 있어요 — 입력 시 자동완성으로 골라주세요.</span>
         </div>
         <div class="m-field">
           <label>교수명</label>
-          <input id="rvProf" placeholder="예) 김선찬"/>
+          <input id="rvProf" placeholder="예) 김선찬" list="rvProfOptions" autocomplete="off"/>
+          <datalist id="rvProfOptions"></datalist>
         </div>
       </div>
       <div class="m-field">
@@ -29826,10 +29829,23 @@ function numFromInput(id) {
 }
 function getStoredDoneCredits() {
   const p = getCreditProfile();
+  /* 1. 사용자가 직접 입력한 총 이수학점 */
   if (Number.isFinite(Number(p.totalDone)) && Number(p.totalDone) > 0) return Number(p.totalDone);
+  /* 2. 카테고리별 입력값 합계 (졸업요건 카드에서 직접 수정한 경우 포함) */
+  if (typeof computeProfileTotal === 'function') {
+    const catSum = computeProfileTotal(p);
+    if (catSum > 0) return catSum;
+  }
+  /* 3. 학기별 입력 합계 */
   const records = getGradeRecords();
-  const sum = records.reduce((s, r) => s + (Number(r.earned) || 0), 0);
-  if (sum > 0) return sum;
+  const recSum = records.reduce((s, r) => s + (Number(r.earned) || 0), 0);
+  if (recSum > 0) return recSum;
+  /* 4. 필수과목 체크리스트에서 체크한 과목 학점 합 */
+  if (typeof getCompletedRequiredCredits === 'function') {
+    const reqSum = getCompletedRequiredCredits();
+    if (reqSum > 0) return reqSum;
+  }
+  /* 5. CATEGORIES 기본값 (현재 모두 0) */
   return CATEGORIES.reduce((s, c) => s + c.done, 0);
 }
 function getGradCategories() {
@@ -31609,6 +31625,8 @@ window._refreshResult = async function() {
     ];
   } else {
     try {
+      const _comp = (typeof getCompletedSubjectListsForRequest === 'function')
+        ? getCompletedSubjectListsForRequest() : { codes:[], names:[] };
       const res = await api.recommend({
         start_hour:       startTimeHour,
         time_preference:  timePref,
@@ -31618,6 +31636,9 @@ window._refreshResult = async function() {
         interests,
         plan_count:       planCount,
         gap_preference:   gapPref,
+        /* 필수과목 체크리스트에서 이수 표시한 과목은 추천에서 제외 */
+        completed_subject_codes: _comp.codes,
+        completed_course_names:  _comp.names,
       });
       const apiPlans = (res.data && res.data.plans) ? res.data.plans : [];
       window.__lastRecId = (res.data && res.data.recommendation_id) || null;
@@ -31628,6 +31649,7 @@ window._refreshResult = async function() {
         const res2 = await api.recommend({
           start_hour:9, time_preference:'any', free_days:[], target_credits:targetCredits,
           plan_period:'single', interests:[], plan_count:planCount, gap_preference:gapPref,
+          completed_subject_codes: _comp.codes, completed_course_names: _comp.names,
         });
         const plans2 = (res2.data && res2.data.plans) ? res2.data.plans : [];
         if (plans2.length) {
@@ -32715,7 +32737,7 @@ function toggleCompletedCourse(code) {
   const s = getCompletedCourseCodes();
   if (s.has(code)) s.delete(code); else s.add(code);
   setCompletedCourseCodes(s);
-  if (typeof renderChecklist === 'function') renderChecklist();
+  _refreshAfterCompletedToggle();
 }
 /* 과목번호(학수번호)가 없는 필수과목 — 이름 기준으로 이수 토글 */
 function toggleCompletedCourseName(name) {
@@ -32724,7 +32746,74 @@ function toggleCompletedCourseName(name) {
   const token = '@n:' + name.trim();
   if (s.has(token)) s.delete(token); else s.add(token);
   setCompletedCourseCodes(s);
+  _refreshAfterCompletedToggle();
+}
+/* 필수과목 체크 토글 후 — 졸업요건 진척도/차트도 즉시 갱신 */
+function _refreshAfterCompletedToggle() {
   if (typeof renderChecklist === 'function') renderChecklist();
+  if (typeof updateGraduationSummary === 'function') updateGraduationSummary();
+  if (typeof renderCharts === 'function') renderCharts();
+  if (typeof renderProgress === 'function') renderProgress();
+  /* 학번-전공 졸업요건 카드의 진척도 재계산 */
+  if (typeof window._refreshGraduation === 'function') {
+    try { window._refreshGraduation(); } catch(e) {}
+  }
+}
+
+/* 체크된 필수과목들의 학점 합 — 졸업요건 진척도에 포함하기 위함 */
+function getCompletedRequiredCredits() {
+  try {
+    if (typeof getCurriculum !== 'function' || typeof getRequiredCourses !== 'function') return 0;
+    const userInfo = (() => { try { return JSON.parse(localStorage.getItem(USER_INFO_KEY) || '{}'); } catch(_) { return {}; } })();
+    const dept = userInfo.dept || localStorage.getItem('sw_dept');
+    const adm  = userInfo.admissionYear
+      || parseInt(localStorage.getItem('sw_admission_year'), 10)
+      || (userInfo.stu && typeof studentIdToAdmissionYear === 'function' ? studentIdToAdmissionYear(userInfo.stu) : null);
+    if (!dept || !adm) return 0;
+    const cur = getCurriculum(adm, dept);
+    if (!cur) return 0;
+    const req = getRequiredCourses(cur, adm);
+    const completed = getCompletedCourseCodes();
+    let sum = 0;
+    req.forEach(c => {
+      const hit = (c.code && completed.has(c.code)) ||
+                  (c.name && completed.has('@n:' + c.name.trim()));
+      if (hit) sum += Number(c.credits) || 0;
+    });
+    return sum;
+  } catch(e) { return 0; }
+}
+
+/* 졸업요건 카드의 학점 인풋을 직접 수정했을 때 — 프로필에 저장 + 진척도 즉시 갱신 */
+function setCreditCategoryFromGrid(profKey, value) {
+  if (!profKey) return;
+  const p = (typeof getCreditProfile === 'function') ? getCreditProfile() : {};
+  const v = Math.max(0, parseInt(value, 10) || 0);
+  p[profKey] = v;
+  /* totalDone을 새로 계산해 일관성 유지 — 사용자가 직접 카테고리 수정했으니 합산값 사용 */
+  if (typeof computeProfileTotal === 'function') p.totalDone = computeProfileTotal(p);
+  try { localStorage.setItem(CREDIT_PROFILE_KEY, JSON.stringify(p)); } catch(e) {}
+  /* 입력칸 / 차트 / 진척도 일괄 갱신 */
+  if (typeof renderGradeCreditEntry === 'function') renderGradeCreditEntry();
+  if (typeof updateGraduationSummary === 'function') updateGraduationSummary();
+  if (typeof renderCharts === 'function') renderCharts();
+  if (typeof renderProgress === 'function') renderProgress();
+  if (typeof window._refreshGraduation === 'function') {
+    try { window._refreshGraduation(); } catch(e) {}
+  }
+  if (typeof _globalToast === 'function') _globalToast('💾 학점 업데이트 — 진척도에 반영됨');
+}
+
+/* 추천 API 요청용 — 체크된 과목을 codes/names로 분리 */
+function getCompletedSubjectListsForRequest() {
+  const completed = getCompletedCourseCodes();
+  const codes = [], names = [];
+  completed.forEach(t => {
+    if (typeof t !== 'string') return;
+    if (t.startsWith('@n:')) names.push(t.slice(3));
+    else codes.push(t);
+  });
+  return { codes, names };
 }
 
 /* 학번 + 학과로 정밀 졸업요건 조회 (없으면 가까운 연도로 fallback) */
@@ -32853,6 +32942,12 @@ window._refreshGraduation = async function() {
           '일반선택':            p.freeElec       || 0,
         };
 
+        /* 9개 카테고리 → 프로필 키 매핑 (got 인풋 → setCreditCategoryFromGrid 저장용) */
+        const _nameToKey = {
+          '중요핵심교양':'genCore', '기초교양':'genBasic', '선택교양':'genElec', '소양교육':'genEdu',
+          '전공기초교양':'majorBasic', '전공필수(진로취업)':'majorReqCareer', '전공필수(핵심)':'majorReqCore',
+          '전공선택':'majorElec', '일반선택':'freeElec',
+        };
         grid.innerHTML = Object.entries(breakdown).map(([name, need]) => {
           const got = Math.round(progress[name] || 0);
           const pct = need > 0 ? Math.min(100, Math.round(got / need * 100)) : 0;
@@ -32863,11 +32958,22 @@ window._refreshGraduation = async function() {
                            pct > 0 ? 'var(--amber)' : 'var(--border)';
           const status = overFlow ? '✅ 초과' : pct >= 100 ? '✅ 완료' : pct > 0 ? `${need - got}학점 부족` : '미이수';
           const statusColor = pct >= 100 ? 'var(--green)' : pct > 0 ? 'var(--amber)' : 'var(--text-muted)';
+          const profKey = _nameToKey[name] || '';
+          /* 학점 숫자를 직접 입력 가능하게 — 변경 시 setCreditCategoryFromGrid 호출 */
+          const gotInput = profKey
+            ? `<input type="number" min="0" max="200" value="${got}" data-prof-key="${profKey}"
+                 onchange="setCreditCategoryFromGrid('${profKey}', this.value)"
+                 onclick="this.select()"
+                 title="클릭해서 직접 수정 — 변경 시 졸업요건에 즉시 반영"
+                 style="width:48px;font-size:16px;font-weight:800;color:var(--text-dark);
+                        border:1px solid var(--border);border-radius:6px;padding:2px 4px;text-align:center;
+                        background:var(--bg-parchment);" />`
+            : `<span>${got}</span>`;
           return `
             <div style="background:var(--white);padding:10px 12px;border-radius:8px;border:1px solid var(--border);">
               <div style="font-size:11px;color:var(--text-soft);">${name}</div>
-              <div style="font-size:16px;font-weight:800;color:var(--text-dark);margin-top:2px;">
-                ${got}<span style="font-size:11px;color:var(--text-muted);"> / ${need}</span>
+              <div style="display:flex;align-items:center;gap:4px;margin-top:2px;">
+                ${gotInput}<span style="font-size:11px;color:var(--text-muted);"> / ${need}</span>
               </div>
               <div style="height:3px;background:var(--border);border-radius:99px;margin-top:5px;overflow:hidden;">
                 <div style="height:100%;width:${Math.min(100, pct)}%;background:${colorBar};transition:width .4s;"></div>
@@ -34131,6 +34237,58 @@ function openReviewModal() {
   _rvStarSel = 0;
   document.querySelectorAll('#rvStars span').forEach(s => s.classList.remove('active'));
   openModal('modalReview');
+  /* 입력 자동완성 핸들러 1회 부착 */
+  _setupReviewAutocomplete();
+}
+
+/* ── 강의평 작성 자동완성 — DB의 강의명/교수명만 선택 가능 ── */
+let _rvCourseCache = [];   /* 마지막 검색 결과 캐시 (name+professor 매핑용) */
+let _rvDebounce = null;
+function _setupReviewAutocomplete() {
+  const courseEl = document.getElementById('rvCourse');
+  const profEl   = document.getElementById('rvProf');
+  if (!courseEl || courseEl._acReady) return;
+  courseEl._acReady = true;
+
+  const dl = document.getElementById('rvCourseOptions');
+  const profDl = document.getElementById('rvProfOptions');
+
+  async function loadOptions(keyword) {
+    if (!keyword || keyword.length < 1) { dl.innerHTML = ''; return; }
+    if (!(typeof getToken === 'function' && getToken())) return;  /* 비로그인이면 자동완성 안 함 */
+    try {
+      const res = await api.searchCourses({ keyword, size: 20 });
+      const items = (res && res.data && res.data.items) ? res.data.items : [];
+      _rvCourseCache = items;
+      /* 중복 제거 — 같은 강의명이 여러 분반/교수로 있을 수 있으니 "강의명 (교수명)"로 표시 */
+      const seen = new Set();
+      const opts = [];
+      items.forEach(c => {
+        const key = c.name + '|' + c.professor;
+        if (seen.has(key)) return;
+        seen.add(key);
+        opts.push(`<option value="${escapeHTML(c.name)}" label="${escapeHTML(c.professor)} 교수"></option>`);
+      });
+      dl.innerHTML = opts.join('');
+    } catch(e) { /* 무시 */ }
+  }
+
+  courseEl.addEventListener('input', () => {
+    clearTimeout(_rvDebounce);
+    const v = courseEl.value.trim();
+    _rvDebounce = setTimeout(() => loadOptions(v), 220);
+  });
+
+  /* 사용자가 강의명을 고르면 교수명 후보를 자동 채움 */
+  courseEl.addEventListener('change', () => {
+    const v = courseEl.value.trim();
+    const matches = _rvCourseCache.filter(c => c.name === v);
+    if (!matches.length) return;
+    /* 같은 강의의 교수 후보들을 datalist로 제공, 교수가 1명이면 자동 입력 */
+    const profs = [...new Set(matches.map(c => c.professor))];
+    profDl.innerHTML = profs.map(p => `<option value="${escapeHTML(p)}"></option>`).join('');
+    if (profs.length === 1 && !profEl.value.trim()) profEl.value = profs[0];
+  });
 }
 /* 별점 선택 */
 document.addEventListener('click', (e) => {
@@ -34163,7 +34321,16 @@ async function submitReview() {
       return;
     } catch(e) {
       console.warn('[reviews] 등록 실패:', e.message);
-      alert('강의평 등록에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      /* 백엔드가 COURSE_NOT_FOUND로 거절한 경우 — 안내 메시지를 그대로 보여줌 */
+      const m = (e.message || '').match(/COURSE_NOT_FOUND.*?["']message["']\s*:\s*["']([^"']+)/)
+              || (e.message || '').match(/DB에 등록되지 않은[^"']*|'[^']*' 강의는 있지만[^"']*/);
+      if (m) {
+        alert('⚠️ ' + (m[1] || m[0]));
+      } else if (/400/.test(e.message || '')) {
+        alert('⚠️ DB에 등록된 강의명과 교수명을 정확히 입력해주세요. (자동완성에서 골라주세요)');
+      } else {
+        alert('강의평 등록에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      }
       return;
     }
   }
