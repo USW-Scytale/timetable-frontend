@@ -3739,78 +3739,72 @@ footer strong { color: var(--text-dark); font-weight: 600; }
   letter-spacing: -.016em;
 }
 
-/* ── 강의평 리스트 — 배경 하나, 텍스트만 ── */
+/* ── 강의평 리스트 — 베스트 강의평 카드 스타일 ── */
 .route-reviews .rv-grid {
   display: flex;
   flex-direction: column;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid #e4e8ef;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  gap: 12px;
 }
-/* 각 과목 행 — 배경/테두리 없이 구분선만 */
+/* 과목 카드 — 독립 흰 박스 */
 .route-reviews .rv-card {
+  background: #fff;
+  border: 1px solid #e8eaf0;
+  border-radius: 16px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  background: transparent;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,.05);
+  transition: box-shadow .18s;
 }
-.route-reviews .rv-card + .rv-card {
-  border-top: 1px solid #eef0f4;
+.route-reviews .rv-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
 }
-/* 헤더 행 전체가 하나의 평평한 행 */
+/* 카드 헤더 — 클릭 영역 */
 .route-reviews .rv-card-head {
-  display: flex;
-  align-items: center;
-  padding: 14px 20px;
+  padding: 18px 20px 14px;
   cursor: pointer;
   user-select: none;
-  gap: 0;
   transition: background .12s;
-  background: transparent;
 }
-.route-reviews .rv-card-head:hover { background: #f7f8fa; }
-/* 왼쪽 과목명+교수 — flex 1, 별도 박스 없음 */
-.route-reviews .rv-card-info {
-  flex: 1;
-  min-width: 0;
+.route-reviews .rv-card-head:hover { background: #fafbfc; }
+/* 과목명 + 교수 한 줄 */
+.route-reviews .rv-card-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 .route-reviews .rv-card-name {
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: -.02em;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.022em;
   color: #1a1d23;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
-.route-reviews .rv-card-prof {
-  font-size: 12px;
+.route-reviews .rv-card-prof-inline {
+  font-size: 13px;
   color: #8a8f9c;
-  margin-top: 2px;
-  letter-spacing: -.01em;
+  letter-spacing: -.012em;
+  white-space: nowrap;
 }
-/* 오른쪽 평점 정보 — 인라인 텍스트, 박스·배경 없음 */
-.route-reviews .rv-card-meta-right {
+/* 별점 행 */
+.route-reviews .rv-card-star-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  padding-left: 16px;
+  gap: 6px;
 }
 .route-reviews .rv-card-stars {
-  font-size: 13px;
+  font-size: 15px;
   color: #f5a623;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px;
   line-height: 1;
 }
 .route-reviews .rv-card-stars .empty { color: #e0e3ea; }
 .route-reviews .rv-card-avg {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  color: #0052ff;
-  letter-spacing: -.02em;
-  white-space: nowrap;
+  color: #1a1d23;
+  letter-spacing: -.016em;
 }
 .route-reviews .rv-card-avg .small {
   font-size: 11px;
@@ -3818,48 +3812,54 @@ footer strong { color: var(--text-dark); font-weight: 600; }
   color: #a0a5b0;
 }
 .route-reviews .rv-card-count {
-  font-size: 11px;
+  font-size: 12px;
   color: #a0a5b0;
+  margin-left: 2px;
 }
 .route-reviews .rv-card-chevron {
   font-size: 9px;
   color: #c0c5d0;
   transition: transform .2s;
-  flex-shrink: 0;
-  margin-left: 2px;
+  margin-left: auto;
 }
 .route-reviews .rv-card.open .rv-card-chevron { transform: rotate(180deg); }
 .route-reviews .rv-card-toggle { display: none; }
 /* 펼쳐진 리뷰 목록 */
 .route-reviews .rv-card-reviews {
   display: none;
-  background: #f9fafc;
-  border-top: 1px solid #eef0f4;
+  flex-direction: column;
+  border-top: 1px solid #f0f2f6;
 }
-.route-reviews .rv-card-reviews.open { display: flex; flex-direction: column; }
-/* 개별 리뷰 — 패딩+상단 구분선만 */
+.route-reviews .rv-card-reviews.open { display: flex; }
+/* 개별 리뷰 — 베스트 카드 내부 리뷰처럼 */
 .route-reviews .rv-rev-item {
+  padding: 14px 20px;
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 20px;
+  flex-direction: column;
+  gap: 6px;
 }
-.route-reviews .rv-rev-item + .rv-rev-item { border-top: 1px solid #f0f2f5; }
-.route-reviews .rv-rev-left { flex-shrink: 0; padding-top: 1px; }
-.route-reviews .rv-rev-score-badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  color: #fff;
-  background: #0052ff;
-  border-radius: 5px;
-  padding: 2px 6px;
-  line-height: 1.5;
-  letter-spacing: .01em;
+.route-reviews .rv-rev-item + .rv-rev-item {
+  border-top: 1px solid #f4f5f8;
 }
-.route-reviews .rv-rev-stars { display: none; }
-.route-reviews .rv-rev-score { display: none; }
-.route-reviews .rv-rev-body { flex: 1; min-width: 0; }
+.route-reviews .rv-rev-star-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.route-reviews .rv-rev-stars-inline {
+  font-size: 13px;
+  color: #f5a623;
+  letter-spacing: 1px;
+}
+.route-reviews .rv-rev-stars-inline .empty { color: #e0e3ea; }
+.route-reviews .rv-rev-score-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0052ff;
+}
+/* 이전 구조 호환 */
+.route-reviews .rv-rev-left { display: none; }
+.route-reviews .rv-rev-body { display: contents; }
 .route-reviews .rv-rev-content {
   font-size: 13px;
   color: #2a2d35;
@@ -3869,9 +3869,14 @@ footer strong { color: var(--text-dark); font-weight: 600; }
 .route-reviews .rv-rev-meta {
   font-size: 11px;
   color: #a0a5b0;
-  margin-top: 3px;
   letter-spacing: -.01em;
 }
+/* 기존 CSS와 충돌 방지 */
+.route-reviews .rv-card-info { display: none; }
+.route-reviews .rv-card-meta-right { display: none; }
+.route-reviews .rv-rev-score-badge { display: none; }
+.route-reviews .rv-rev-stars { display: none; }
+.route-reviews .rv-rev-score { display: none; }
 
 @media (max-width: 700px) {
   .route-reviews .rv-summary { grid-template-columns: 1fr; }
@@ -34814,29 +34819,34 @@ function renderReviewList() {
     const subtitle = _rvTab === 'course'
       ? `교수: ${[...new Set(items.map(i => i.prof))].join(', ')}`
       : `수업: ${[...new Set(items.map(i => i.course))].join(', ')}`;
+    /* 개별 리뷰 — 베스트 카드 스타일 */
     const itemsHtml = items.map(it => `
       <div class="rv-rev-item" onclick="event.stopPropagation()">
-        <div class="rv-rev-left">
-          <span class="rv-rev-score-badge">${it.stars}.0</span>
+        <div class="rv-rev-star-row">
+          <span class="rv-rev-stars-inline">${starText(it.stars)}</span>
+          <span class="rv-rev-score-text">${it.stars}.0</span>
         </div>
-        <div class="rv-rev-body">
-          <div class="rv-rev-content">${escapeHTML(it.content)}</div>
-          <div class="rv-rev-meta">${_rvTab === 'course' ? it.prof + ' 교수' : it.course} · ${formatRelTime(it.ts)}</div>
-        </div>
+        <div class="rv-rev-content">${escapeHTML(it.content)}</div>
+        <div class="rv-rev-meta">${_rvTab === 'course' ? it.prof + ' 교수' : it.course} · ${formatRelTime(it.ts)}</div>
       </div>
     `).join('');
 
+    /* 교수/수업 부제 */
+    const profNames = _rvTab === 'course'
+      ? [...new Set(items.map(i => i.prof))].join(', ')
+      : [...new Set(items.map(i => i.course))].join(', ');
+
     return `<div class="rv-card">
       <div class="rv-card-head" onclick="toggleRvCard(this.closest('.rv-card'))">
-        <div class="rv-card-info">
-          <div class="rv-card-name">${escapeHTML(key)}</div>
-          <div class="rv-card-prof">${escapeHTML(subtitle)}</div>
+        <div class="rv-card-title-row">
+          <span class="rv-card-name">${escapeHTML(key)}</span>
+          <span class="rv-card-prof-inline">· ${escapeHTML(profNames)}</span>
+          <span class="rv-card-chevron">▼</span>
         </div>
-        <div class="rv-card-meta-right">
+        <div class="rv-card-star-row">
           <span class="rv-card-stars">${starText(avgInt)}</span>
           <span class="rv-card-avg">${avg}<span class="small">/5</span></span>
-          <span class="rv-card-count">${g.total}개</span>
-          <span class="rv-card-chevron">▼</span>
+          <span class="rv-card-count">(${g.total}개)</span>
         </div>
       </div>
       <div class="rv-card-reviews">${itemsHtml}</div>
