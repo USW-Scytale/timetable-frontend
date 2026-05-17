@@ -3739,39 +3739,41 @@ footer strong { color: var(--text-dark); font-weight: 600; }
   letter-spacing: -.016em;
 }
 
-/* ── 강의평 리스트 — 아코디언 피드 스타일 ── */
+/* ── 강의평 리스트 ── */
 .route-reviews .rv-grid {
   display: flex;
   flex-direction: column;
   gap: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  overflow: hidden;
   background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
 }
+/* 과목 행 — 테두리 없이 하단 구분선만 */
 .route-reviews .rv-card {
   background: #fff;
   border-bottom: 1px solid var(--border);
   padding: 0;
   display: flex;
   flex-direction: column;
-  transition: background .15s;
 }
 .route-reviews .rv-card:last-child { border-bottom: none; }
 .route-reviews .rv-card-head {
   display: flex;
   align-items: center;
-  gap: 0;
-  padding: 16px 20px;
+  padding: 15px 20px;
   cursor: pointer;
   user-select: none;
+  gap: 14px;
+  transition: background .15s;
 }
-.route-reviews .rv-card-head:hover { background: var(--bg-parchment); }
+.route-reviews .rv-card-head:hover { background: #f8f9fb; }
 .route-reviews .rv-card-info { flex: 1; min-width: 0; }
 .route-reviews .rv-card-name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: -.02em;
+  color: var(--text-dark);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3779,91 +3781,92 @@ footer strong { color: var(--text-dark); font-weight: 600; }
 .route-reviews .rv-card-prof {
   font-size: 12px;
   color: var(--text-soft);
-  margin-top: 3px;
+  margin-top: 2px;
   letter-spacing: -.012em;
 }
+/* 오른쪽 평점 영역 — 테두리·박스 없이 텍스트만 */
 .route-reviews .rv-card-meta-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
   flex-shrink: 0;
-  margin-left: 16px;
 }
-.route-reviews .rv-card-avg {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--blue);
-  letter-spacing: -.02em;
-  white-space: nowrap;
-  line-height: 1;
-}
-.route-reviews .rv-card-avg .small { font-size: 11px; color: var(--text-soft); font-weight: 400; }
 .route-reviews .rv-card-stars {
   font-size: 13px;
   color: #f5a623;
   letter-spacing: 1px;
 }
-.route-reviews .rv-card-stars .empty { color: var(--border); }
+.route-reviews .rv-card-stars .empty { color: #ddd; }
+.route-reviews .rv-card-avg {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: -.02em;
+  white-space: nowrap;
+}
+.route-reviews .rv-card-avg .small {
+  font-size: 11px;
+  color: var(--text-soft);
+  font-weight: 400;
+}
 .route-reviews .rv-card-count {
   font-size: 12px;
   color: var(--text-soft);
   letter-spacing: -.012em;
-  white-space: nowrap;
 }
 .route-reviews .rv-card-chevron {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
   transition: transform .2s;
-  margin-left: 8px;
   flex-shrink: 0;
 }
 .route-reviews .rv-card.open .rv-card-chevron { transform: rotate(180deg); }
-.route-reviews .rv-card-toggle { display: none; } /* 기존 버튼 숨김 */
+.route-reviews .rv-card-toggle { display: none; }
+/* 펼쳐진 리뷰 영역 — 배경만 살짝 달리, 테두리 없이 */
 .route-reviews .rv-card-reviews {
   display: none;
+  background: #fafbfc;
   border-top: 1px solid var(--border);
-  background: var(--bg-parchment);
 }
-.route-reviews .rv-card-reviews.open { display: block; }
+.route-reviews .rv-card-reviews.open { display: flex; flex-direction: column; }
+/* 개별 리뷰 행 — 패딩만, 테두리 최소 */
 .route-reviews .rv-rev-item {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--border);
+  padding: 13px 20px;
 }
-.route-reviews .rv-rev-item:last-child { border-bottom: none; }
+.route-reviews .rv-rev-item + .rv-rev-item {
+  border-top: 1px solid #f0f0f0;
+}
 .route-reviews .rv-rev-left {
   flex-shrink: 0;
-  text-align: center;
-  min-width: 36px;
+  padding-top: 1px;
 }
-.route-reviews .rv-rev-stars {
+.route-reviews .rv-rev-score-badge {
+  display: inline-block;
   font-size: 12px;
-  color: #f5a623;
-  letter-spacing: .5px;
-  display: block;
-}
-.route-reviews .rv-rev-stars .empty { color: var(--border); }
-.route-reviews .rv-rev-score {
-  font-size: 15px;
   font-weight: 700;
-  color: var(--blue);
-  line-height: 1;
-  margin-top: 2px;
-  display: block;
+  color: #fff;
+  background: var(--blue);
+  border-radius: 6px;
+  padding: 2px 7px;
+  line-height: 1.5;
 }
+/* 호환 — 이전 구조 */
+.route-reviews .rv-rev-stars { display: none; }
+.route-reviews .rv-rev-score  { display: none; }
 .route-reviews .rv-rev-body { flex: 1; min-width: 0; }
 .route-reviews .rv-rev-content {
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--text-dark);
-  line-height: 1.55;
-  letter-spacing: -.016em;
+  line-height: 1.6;
+  letter-spacing: -.014em;
 }
 .route-reviews .rv-rev-meta {
   font-size: 11px;
   color: var(--text-muted);
-  margin-top: 5px;
+  margin-top: 4px;
   letter-spacing: -.012em;
 }
 
@@ -34453,8 +34456,8 @@ function renderReviewList() {
           <div class="rv-card-prof">${escapeHTML(subtitle)}</div>
         </div>
         <div class="rv-card-meta-right">
-          <div class="rv-card-stars">${starText(avgInt)}</div>
-          <div class="rv-card-avg">${avg}<span class="small">/5</span></div>
+          <span class="rv-card-stars">${starText(avgInt)}</span>
+          <span class="rv-card-avg">${avg}<span class="small">/5</span></span>
           <span class="rv-card-count">${g.total}개</span>
           <span class="rv-card-chevron">▼</span>
         </div>
