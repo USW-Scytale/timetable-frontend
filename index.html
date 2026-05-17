@@ -30747,6 +30747,58 @@ function swAutofillCourseInfo(semKey) {
 }
 
 /* 학기 기록 → 9 카테고리 합계 + 완료 과목 코드 + GPA — 모두 자동 갱신 */
+
+/* FIX D: 필수과목 체크 상태 → 졸업요건 CREDIT_PROFILE에 학점 반영 */
+function _applyCheckedCoursesToProfile() {
+  try {
+    if (typeof getCurriculum !== 'function' || typeof getRequiredCourses !== 'function') return;
+    let userInfo = {};
+    try { userInfo = JSON.parse(localStorage.getItem(USER_INFO_KEY) || '{}'); } catch(e) {}
+    const admissionYear = userInfo.admissionYear
+      || parseInt(localStorage.getItem('sw_admission_year'), 10) || 2026;
+    const deptKey = userInfo.dept
+      || localStorage.getItem('sw_dept')
+      || localStorage.getItem('sw_major') || '컴퓨터공학';
+    const curriculum = getCurriculum(admissionYear, deptKey);
+    if (!curriculum) return;
+    const required  = getRequiredCourses(curriculum, admissionYear);
+    const completed = getCompletedCourseCodes();
+    /* 체크된 과목만 카테고리별 합산 */
+    const extra = { majorReqCore:0, majorReqCareer:0, majorElec:0,
+                    genCore:0, genBasic:0, genElec:0, genEdu:0,
+                    majorBasic:0, freeElec:0 };
+    required.forEach(c => {
+      const isDone = (c.code && completed.has(c.code)) ||
+                     (c.name && completed.has('@n:' + c.name.trim()));
+      if (!isDone) return;
+      const cr   = Number(c.credits) || 0;
+      const type = c.type || c.category || '';
+      if      (type.includes('전공필수') && type.includes('핵심'))  extra.majorReqCore   += cr;
+      else if (type.includes('전공필수') && type.includes('진로'))  extra.majorReqCareer += cr;
+      else if (type.includes('전공선택'))                            extra.majorElec      += cr;
+      else if (type.includes('전공기초'))                            extra.majorBasic     += cr;
+      else if (type.includes('중요핵심교양'))                        extra.genCore        += cr;
+      else if (type.includes('기초교양'))                            extra.genBasic       += cr;
+      else if (type.includes('선택교양'))                            extra.genElec        += cr;
+      else if (type.includes('소양'))                                extra.genEdu         += cr;
+      else                                                           extra.freeElec       += cr;
+    });
+    /* 기존 프로필과 병합 (더 큰 값 사용 — 학점입력창 값이 있으면 그것을 우선) */
+    const base   = getCreditProfile();
+    const merged = { ...base };
+    for (const [k, v] of Object.entries(extra)) {
+      merged[k] = Math.max(Number(merged[k]) || 0, v);
+    }
+    const leg       = deriveLegacyCredits(merged);
+    merged.majorReq = leg.majorReq;
+    merged.majorElec= leg.majorElec;
+    merged.genReq   = leg.genReq;
+    merged.genElec  = leg.genElec;
+    merged.other    = leg.other;
+    merged.totalDone= computeProfileTotal(merged);
+    writeJSONStorage(CREDIT_PROFILE_KEY, merged);
+  } catch(e) { console.warn('_applyCheckedCoursesToProfile:', e); }
+}
 function swAggregateAndRefresh() {
   const h = swGetGradeHistory();
   const fields = { genCore:0, genBasic:0, genElec:0, genEdu:0,
@@ -30781,9 +30833,9 @@ function swAggregateAndRefresh() {
   const legacy = deriveLegacyCredits(fields);
   const profile = { ...fields, ...legacy, totalDone: computeProfileTotal(fields), gpa, savedAt: Date.now() };
 
-  /* 저장 */
+  /* 저장 — 학점 프로필만 저장, 필수과목 체크는 독립 관리 */
   writeJSONStorage(CREDIT_PROFILE_KEY, profile);
-  setCompletedCourseCodes(completed);
+  /* FIX A: setCompletedCourseCodes 제거 — 학점입력창과 체크박스 완전 분리 */
 
   /* UI 일괄 갱신 */
   swRenderSemesterPanel();
@@ -31232,15 +31284,9 @@ function renderChecklist() {
 
   const required = getRequiredCourses(curriculum, admissionYear);
   const completed = getCompletedCourseCodes();
-  /* 코드 없는 교양 과목도 매칭되도록 이름 set 추가 */
-  const completedNames = new Set();
-  try {
-    Object.values(swGetGradeHistory()).forEach(arr =>
-      (arr || []).forEach(c => { if (c.name) completedNames.add(c.name.trim()); })
-    );
-  } catch(_) {}
+  /* FIX B: isDoneCourse는 체크박스(completedCourses) 상태만 참조.
+     gradeHistory 이름 매칭 제거 → 학점입력창과 체크박스 완전 독립. */
   const isDoneCourse = (c) => (c.code && completed.has(c.code)) ||
-                              (c.name && completedNames.has(c.name.trim())) ||
                               (c.name && completed.has('@n:' + c.name.trim()));
 
   /* 학년-학기별 그룹화 */
@@ -32798,17 +32844,14 @@ function toggleCompletedCourseName(name) {
 }
 /* 필수과목 체크 토글 후 — 졸업요건 진척도/차트도 즉시 갱신 */
 function _refreshAfterCompletedToggle() {
+  /* FIX C: 체크된 필수과목 학점을 먼저 profile에 반영 → 그래프/남은학점 즉시 갱신 */
+  _applyCheckedCoursesToProfile();
   if (typeof renderChecklist === 'function') renderChecklist();
   if (typeof updateGraduationSummary === 'function') updateGraduationSummary();
   if (typeof renderCharts === 'function') renderCharts();
   if (typeof renderProgress === 'function') renderProgress();
-  /* 학번-전공 졸업요건 카드의 진척도 재계산 */
   if (typeof window._refreshGraduation === 'function') {
     try { window._refreshGraduation(); } catch(e) {}
-  }
-  /* FIX 2b: 체크 즉시 졸업요건 갱신 */
-  if (typeof swAggregateAndRefresh === 'function') {
-    try { swAggregateAndRefresh(); } catch(_) {}
   }
 }
 
