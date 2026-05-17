@@ -7941,6 +7941,7 @@ textarea:focus {
       <div class="m-field" style="margin-bottom:10px;">
         <input id="electivePickerSearch" placeholder="과목명/교수명으로 검색..." autocomplete="off"/>
       </div>
+      <div id="electivePickerAreaTabs" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
       <div id="electivePickerList" style="max-height:420px;overflow-y:auto;padding:2px;"></div>
       <div class="m-actions">
         <button class="m-btn ghost" onclick="closeModal('modalElectivePicker')">닫기</button>
@@ -8625,6 +8626,8 @@ function _apiCourseToLocal(c) {
       room: s.room || '',
     })),
     room: c.room || (c.schedule && c.schedule[0] && c.schedule[0].room) || '',
+    balance_area: c.balance_area || null,
+    balance_area_num: c.balance_area_num || null,
   };
 }
 const DAY_KO_FULL = { mon:'월요일', tue:'화요일', wed:'수요일', thu:'목요일', fri:'금요일' };
@@ -8948,11 +8951,15 @@ function renderCourses(idx) {
   plan.courses.forEach((c, ci) => {
     const ti = TI[c.t] || TI.ls;
     const popMark = c.pop === 'high' ? '<span style="font-size:9px;margin-left:2px;">🔥</span>' : c.pop === 'mid' ? '<span style="font-size:9px;margin-left:2px;">⚡</span>' : '';
+    /* 균형교양이면 작은 영역 마크 */
+    const areaMark = c.balance_area_num
+      ? `<span style="font-size:9px;margin-left:2px;padding:0 4px;background:rgba(255,255,255,.6);border-radius:99px;font-weight:800;" title="${c.balance_area_num}영역 ${c.balance_area||''}">${c.balance_area_num}영역</span>`
+      : '';
     getCourseSessions(c).forEach(session => {
       session.days.forEach(day => {
         const d = mk('tt-course');
         d.style.cssText = `grid-column:${DC[day]};grid-row:${session.s+1}/${session.s+session.sp+1};background:${ti.color}1c;border-left:3px solid ${ti.color};color:${ti.color};`;
-        d.innerHTML = `<div class="tt-cn">${c.n}${popMark}</div><div class="tt-cp">${c.p}</div><div class="tt-cr">${session.room}</div>`;
+        d.innerHTML = `<div class="tt-cn">${c.n}${popMark}${areaMark}</div><div class="tt-cp">${c.p}</div><div class="tt-cr">${session.room}</div>`;
         d.addEventListener('click', () => openSwapModal(ci));
         g.appendChild(d);
       });
@@ -9044,8 +9051,12 @@ function updateTable(idx) {
     const ti = TI[c.t] || TI.ls;
     const badge = typeof getPopBadge === 'function' ? getPopBadge(c.pop) : '';
     const rooms = [...new Set(getCourseSessions(c).map(s => s.room))].join('<br>');
+    /* 균형교양(선택교양)이면 N영역 배지 함께 표시 */
+    const areaBadge = (c.balance_area_num && typeof _areaBadgeHTML === 'function')
+      ? _areaBadgeHTML({ balance_area_num: c.balance_area_num, balance_area: c.balance_area })
+      : '';
     h += `<tr>
-      <td style="font-weight:600;">${c.n}${badge}</td>
+      <td style="font-weight:600;">${c.n}${badge}${areaBadge}</td>
       <td>${c.p}</td>
       <td><span class="type-badge ${ti.cls}">${ti.label}</span></td>
       <td>${c.cr}학점</td>
@@ -31827,6 +31838,8 @@ window._refreshResult = async function() {
     try {
       const _comp = (typeof getCompletedSubjectListsForRequest === 'function')
         ? getCompletedSubjectListsForRequest() : { codes:[], names:[] };
+      const _unmetAreas = (typeof getUnmetBalanceAreas === 'function')
+        ? getUnmetBalanceAreas() : [];
       const res = await api.recommend({
         start_hour:       startTimeHour,
         time_preference:  timePref,
@@ -31839,6 +31852,8 @@ window._refreshResult = async function() {
         /* 필수과목 체크리스트에서 이수 표시한 과목은 추천에서 제외 */
         completed_subject_codes: _comp.codes,
         completed_course_names:  _comp.names,
+        /* 미이수 균형교양 영역(1~6) — 백엔드가 해당 영역 과목을 다른 균형교양보다 먼저 추천 */
+        unmet_balance_areas:     _unmetAreas,
       });
       const apiPlans = (res.data && res.data.plans) ? res.data.plans : [];
       window.__lastRecId = (res.data && res.data.recommendation_id) || null;
@@ -31850,6 +31865,7 @@ window._refreshResult = async function() {
           start_hour:9, time_preference:'any', free_days:[], target_credits:targetCredits,
           plan_period:'single', interests:[], plan_count:planCount, gap_preference:gapPref,
           completed_subject_codes: _comp.codes, completed_course_names: _comp.names,
+          unmet_balance_areas: _unmetAreas,
         });
         const plans2 = (res2.data && res2.data.plans) ? res2.data.plans : [];
         if (plans2.length) {
@@ -33114,6 +33130,24 @@ function setSelectedElectives(arr) {
   try { localStorage.setItem(SELECTED_ELECTIVES_KEY(), JSON.stringify(arr)); } catch(e) {}
 }
 
+/* 미이수 균형교양 영역(1~6) — 선택과목 패널에 추가된 과목 중 영역 정보 있는 것 기준 */
+function getUnmetBalanceAreas() {
+  const byArea = {};
+  try {
+    const selected = (typeof getSelectedElectives === 'function') ? getSelectedElectives() : [];
+    selected.forEach(c => {
+      if (c.type === 'balance_general' && c.balance_area_num) {
+        byArea[c.balance_area_num] = (byArea[c.balance_area_num] || 0) + 1;
+      }
+    });
+  } catch(e) {}
+  const unmet = [];
+  for (let n = 1; n <= 6; n++) {
+    if (!byArea[n]) unmet.push(n);
+  }
+  return unmet;
+}
+
 function _getElectiveNeeds() {
   try {
     const userInfo = JSON.parse(localStorage.getItem(USER_INFO_KEY) || '{}');
@@ -33196,12 +33230,48 @@ function _renderElectivePanelOne(listId, txtId, barId, countId, items, need, cat
   const cnt = document.getElementById(countId);
   if (cnt) cnt.textContent = `${items.length} 과목`;
 
+  /* 선택교양 패널에는 영역별 충족 미니맵 + 안내 추가 (6개 영역 중 N영역 충족) */
+  let areaWidget = '';
+  if (category === 'balance_general') {
+    const byArea = {};
+    items.forEach(c => {
+      const n = Number(c.balance_area_num);
+      if (n >= 1 && n <= 6) byArea[n] = (byArea[n] || 0) + 1;
+    });
+    const AREAS = [
+      [1,'언어와 소통','#3B82F6'],[2,'세계와 문명','#7C3AED'],[3,'사회와 문화','#16A34A'],
+      [4,'AI와 과학기술','#D97706'],[5,'창업과 혁신경영','#EC4899'],[6,'건강과 예술','#0EA5E9'],
+    ];
+    const metCount = AREAS.filter(([n]) => byArea[n]).length;
+    const cells = AREAS.map(([n, nm, color]) => {
+      const met = byArea[n] > 0;
+      const cnt = byArea[n] || 0;
+      return `<div title="${n}영역 ${escapeHTML(nm)}${met ? ` · ${cnt}과목 이수` : ' · 미이수'}"
+        style="flex:1;min-width:42px;text-align:center;padding:5px 2px;border-radius:6px;
+               background:${met ? color : 'var(--bg-parchment)'};
+               color:${met ? '#fff' : 'var(--text-muted)'};
+               border:1px solid ${met ? color : 'var(--border)'};
+               font-size:10px;font-weight:800;">
+        ${met ? '✓' : ''}${n}영역
+      </div>`;
+    }).join('');
+    const allMet = metCount === 6;
+    areaWidget = `
+      <div style="margin-bottom:10px;padding:10px;background:${allMet ? '#F0FDF4' : 'var(--white)'};
+                  border:1px solid ${allMet ? 'var(--green-mid)' : 'var(--border)'};border-radius:8px;">
+        <div style="font-size:11px;font-weight:700;color:${allMet ? 'var(--green)' : 'var(--text-soft)'};margin-bottom:6px;">
+          🎯 영역별 1과목씩 이수 — <strong>${metCount} / 6 영역</strong> 충족${allMet ? ' (졸업요건 충족!)' : ''}
+        </div>
+        <div style="display:flex;gap:4px;">${cells}</div>
+      </div>`;
+  }
+
   if (!items.length) {
-    list.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:14px 0;font-size:12px;">아직 추가한 과목이 없어요</div>`;
+    list.innerHTML = areaWidget + `<div style="text-align:center;color:var(--text-muted);padding:14px 0;font-size:12px;">아직 추가한 과목이 없어요</div>`;
     return;
   }
 
-  list.innerHTML = items.map((c) => {
+  list.innerHTML = areaWidget + items.map((c) => {
     const safeName = escapeHTML(c.name || '');
     const safeProf = escapeHTML(c.professor || '');
     const overflowTag = c._overflow
@@ -33216,10 +33286,11 @@ function _renderElectivePanelOne(listId, txtId, barId, countId, items, need, cat
       : `<button data-remove-key="${escapeHTML(c.course_id || (c.name+'|'+c.professor))}" data-category="${category}"
                  onclick="_removeElectiveFromBtn(this)" title="제거"
                  style="margin-left:8px;background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:4px 6px;">✕</button>`;
+    const areaTag = (typeof _areaBadgeHTML === 'function') ? _areaBadgeHTML(c) : '';
     return `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--white);border:1px solid ${c._overflow?'#FDE68A':'var(--border)'};border-radius:8px;">
         <div style="min-width:0;flex:1;">
-          <div style="font-size:13px;font-weight:700;color:var(--text-dark);">${safeName}${overflowTag}${semTag}</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-dark);">${safeName}${areaTag}${overflowTag}${semTag}</div>
           <div style="font-size:11px;color:var(--text-soft);margin-top:2px;">${safeProf} · ${c.credits || 0}학점</div>
         </div>
         ${removeBtn}
@@ -33250,9 +33321,52 @@ function removeSelectedElective(category, key) {
 
 let _electivePickerCategory = '';
 let _electivePickerCache = [];
+let _electivePickerAreaFilter = null;  /* null=전체, 1~6=해당 영역만 */
+
+function _renderElectiveAreaTabs() {
+  const wrap = document.getElementById('electivePickerAreaTabs');
+  if (!wrap) return;
+  /* 선택교양일 때만 노출 */
+  if (_electivePickerCategory !== 'balance_general') {
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = 'flex';
+  /* 캐시에서 영역별 개수 집계 */
+  const counts = {};
+  _electivePickerCache.forEach(c => {
+    const n = c.balance_area_num;
+    if (n) counts[n] = (counts[n] || 0) + 1;
+  });
+  const AREAS = [
+    [1,'언어와 소통','#3B82F6'],[2,'세계와 문명','#7C3AED'],[3,'사회와 문화','#16A34A'],
+    [4,'AI와 과학기술','#D97706'],[5,'창업과 혁신경영','#EC4899'],[6,'건강과 예술','#0EA5E9'],
+  ];
+  const btn = (label, val, color, count) => {
+    const active = _electivePickerAreaFilter === val;
+    return `<button onclick="_setElectivePickerArea(${val===null?'null':val})"
+      style="padding:5px 10px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;
+             border:1px solid ${active?color:'var(--border)'};
+             background:${active?color:'var(--white)'};
+             color:${active?'#fff':color};">${label}${count!=null?` <span style="opacity:.7">${count}</span>`:''}</button>`;
+  };
+  const totalCount = _electivePickerCache.length;
+  let html = btn(`전체`, null, 'var(--text-dark)', totalCount);
+  AREAS.forEach(([n, nm, c]) => {
+    html += btn(`${n}영역 ${nm}`, n, c, counts[n] || 0);
+  });
+  wrap.innerHTML = html;
+}
+
+function _setElectivePickerArea(num) {
+  _electivePickerAreaFilter = num;
+  _renderElectiveAreaTabs();
+  _renderElectivePickerList();
+}
 
 async function openElectivePicker(category) {
   _electivePickerCategory = category;
+  _electivePickerAreaFilter = null;
   const title = category === 'balance_general' ? '📘 선택교양 과목 추가' : '📕 전공선택 과목 추가';
   const sub = category === 'major_elective'
     ? '현재 학생 전공의 전공선택 과목만 표시됩니다.'
@@ -33295,6 +33409,7 @@ async function openElectivePicker(category) {
       return true;
     });
     _electivePickerCache = items;
+    _renderElectiveAreaTabs();
     _renderElectivePickerList();
   } catch(e) {
     document.getElementById('electivePickerList').innerHTML =
@@ -33306,10 +33421,14 @@ function _renderElectivePickerList() {
   const list = document.getElementById('electivePickerList');
   if (!list) return;
   const q = (document.getElementById('electivePickerSearch')?.value || '').trim().toLowerCase();
-  const items = q
-    ? _electivePickerCache.filter(c =>
-        (c.name || '').toLowerCase().includes(q) || (c.professor || '').toLowerCase().includes(q))
-    : _electivePickerCache;
+  let items = _electivePickerCache;
+  if (_electivePickerAreaFilter) {
+    items = items.filter(c => Number(c.balance_area_num) === Number(_electivePickerAreaFilter));
+  }
+  if (q) {
+    items = items.filter(c =>
+      (c.name || '').toLowerCase().includes(q) || (c.professor || '').toLowerCase().includes(q));
+  }
   if (!items.length) {
     list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-soft);">검색 결과가 없습니다</div>';
     return;
@@ -33320,7 +33439,8 @@ function _renderElectivePickerList() {
     const isAdded = added.has(key);
     const safe = JSON.stringify({
       course_id:c.course_id, subject_code:c.subject_code, name:c.name,
-      professor:c.professor, credits:c.credits, type:c.type
+      professor:c.professor, credits:c.credits, type:c.type,
+      balance_area:c.balance_area, balance_area_num:c.balance_area_num
     }).replace(/'/g,"\\'").replace(/"/g, '&quot;');
     return `
       <div ${isAdded ? '' : `onclick="addElectiveFromAttr(this)"`} data-course="${safe}"
@@ -33328,7 +33448,7 @@ function _renderElectivePickerList() {
            onmouseover="${isAdded?'':"this.style.background='var(--blue-bg)'"}"
            onmouseout="${isAdded?'':"this.style.background='var(--white)'"}">
         <div style="min-width:0;flex:1;">
-          <div style="font-size:13px;font-weight:700;color:var(--text-dark);">${escapeHTML(c.name||'')}</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-dark);">${escapeHTML(c.name||'')}${_areaBadgeHTML(c)}</div>
           <div style="font-size:11px;color:var(--text-soft);margin-top:2px;">${escapeHTML(c.professor||'')} · ${c.credits||0}학점</div>
         </div>
         ${isAdded
@@ -33336,6 +33456,21 @@ function _renderElectivePickerList() {
           : '<span style="font-size:18px;color:var(--blue);font-weight:700;margin-left:8px;">＋</span>'}
       </div>`;
   }).join('');
+}
+
+/* 영역 배지 — N영역 + 영역명 (없으면 빈 문자열) */
+function _areaBadgeHTML(c) {
+  if (!c) return '';
+  const num = c.balance_area_num;
+  const nm = c.balance_area;
+  if (!num && !nm) return '';
+  const colors = {
+    1:'#3B82F6', 2:'#7C3AED', 3:'#16A34A', 4:'#D97706', 5:'#EC4899', 6:'#0EA5E9'
+  };
+  const color = num ? colors[num] : '#64748B';
+  const label = num ? `${num}영역` : (nm || '');
+  const title = num && nm ? `${num}영역 · ${nm}` : (nm || '');
+  return `<span title="${escapeHTML(title)}" style="display:inline-block;padding:1px 7px;background:${color}18;color:${color};font-size:9px;font-weight:800;border-radius:99px;margin-left:6px;vertical-align:middle;">${label}</span>`;
 }
 
 /* 클릭 핸들러 — data-course 속성에서 과목 정보 파싱해서 추가 */
@@ -33362,6 +33497,8 @@ function _doAddElective(course) {
     professor: course.professor || '',
     credits: Number(course.credits) || 0,
     type: course.type,
+    balance_area: course.balance_area || null,
+    balance_area_num: course.balance_area_num || null,
   });
   setSelectedElectives(selected);
   renderElectiveSections();
