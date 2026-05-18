@@ -6189,6 +6189,154 @@ textarea:focus {
     animation: none !important;
   }
 }
+
+/* ============================================================
+   📱 모바일 — 햄버거 메뉴 + 시간표 폭 맞춤
+   ============================================================ */
+
+/* 햄버거 버튼 — 데스크톱 숨김, 모바일에서만 표시 */
+.nav-toggle {
+  display: none;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 18px;
+  line-height: 1;
+  padding: 7px 11px;
+  cursor: pointer;
+  color: var(--text-dark);
+  font-family: inherit;
+}
+.nav-toggle:hover { background: var(--bg-parchment); }
+.nav-toggle:active { transform: scale(.95); }
+
+@media (max-width: 720px) {
+  .navbar { position: relative; z-index: 100; }
+  .navbar-inner {
+    position: relative;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    gap: 8px;
+  }
+  /* 햄버거 노출 */
+  .nav-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    margin-left: auto;
+  }
+  /* nav-links를 드롭다운 패널로 — 기본 숨김, .open 시 표시 */
+  .nav-links {
+    display: none !important;
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: #fff !important;
+    flex-direction: column !important;
+    padding: 10px 14px !important;
+    gap: 2px !important;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 12px 24px rgba(0,0,0,.10);
+    z-index: 90;
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+  .nav-links.open { display: flex !important; }
+  /* 개별 라우트의 display:none override */
+  .route-index .nav-links a:not(.nav-cta),
+  .route-result .nav-links a:not(.nav-cta),
+  .route-rooms .nav-links a:not(.nav-cta),
+  .route-graduation .nav-links a:not(.nav-cta),
+  .route-calendar .nav-links a:not(.nav-cta),
+  .route-mytimetable .nav-links a:not(.nav-cta),
+  .route-reviews .nav-links a:not(.nav-cta),
+  .route-check .nav-links a:not(.nav-cta),
+  .nav-links a {
+    display: block !important;
+    width: 100%;
+    padding: 13px 14px !important;
+    font-size: 15px !important;
+    text-align: left;
+    border-radius: 8px;
+    color: var(--text-dark) !important;
+    text-decoration: none;
+  }
+  .nav-links a:hover { background: var(--bg-parchment); }
+  .nav-links a.active { background: var(--blue-bg); color: var(--blue) !important; font-weight: 700; }
+  .nav-links .nav-cta {
+    background: var(--blue) !important;
+    color: #fff !important;
+    text-align: center !important;
+    margin-top: 6px;
+    font-weight: 700;
+  }
+  /* 로고 컴팩트 */
+  .logo-label, .logo-text { font-size: 14px !important; }
+  .logo-label em, .logo-text em { font-style: normal; }
+}
+@media (max-width: 420px) {
+  .logo-label, .logo-text { display: none !important; }
+}
+
+/* ============================================================
+   📱 모바일 — 시간표 그리드 화면 폭에 맞게 (스크롤 없이)
+   ============================================================ */
+@media (max-width: 720px) {
+  .route-index .week-card,
+  .route-result .tt-card {
+    overflow: hidden !important;
+  }
+  .route-index .week-grid {
+    min-width: 0 !important;
+    overflow: visible !important;
+    grid-template-columns: 32px repeat(5, 1fr) !important;
+  }
+  .route-result .tt-grid {
+    min-width: 0 !important;
+    grid-template-columns: 32px repeat(5, 1fr) !important;
+    grid-template-rows: 32px repeat(9, 44px) !important;
+  }
+  /* 시간표 셀 폰트 — 좁은 셀에 맞게 */
+  .route-result .tt-cn,
+  .route-index .wg-name { font-size: 9.5px !important; line-height: 1.15; word-break: break-all; }
+  .route-result .tt-cp,
+  .route-result .tt-cr { font-size: 8px !important; line-height: 1.15; }
+  .route-result .tt-time,
+  .route-result .tt-day,
+  .route-index .wg-time,
+  .route-index .wg-day { font-size: 9.5px !important; }
+  .route-index .wd-class.commute .wc-name,
+  .route-index .wd-class.commute .wc-meta { font-size: 9px !important; }
+  /* 결과 페이지 과목 목록 표 — 자식 표(min-width 640px)가 부모를 부풀리는 거 방지 */
+  .route-result .course-section {
+    max-width: 100% !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  .route-result .course-table-wrap {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* 시간표 추천 결과 main-layout(시간표 + 사이드바)도 모바일에선 1열로 + 폭 맞춤 */
+  .route-result .main-layout {
+    max-width: 100% !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    box-sizing: border-box;
+  }
+  /* 전반적인 .route-XXX .content 좌우 padding 살짝 줄임 + 페이지가 viewport를 넘지 않게 */
+  .route-result .content,
+  .route-graduation .content,
+  .route-rooms .content {
+    max-width: 100% !important;
+    box-sizing: border-box;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
   </style>
 
 </head>
@@ -7159,6 +7307,8 @@ textarea:focus {
     </a>
     <div class="nav-links">
       <a href="#/mytimetable">내 시간표</a>
+      <a href="#/calendar">학사일정</a>
+      <a href="#/reviews">강의평</a>
       <a href="#/rooms">빈 강의실</a>
       <a href="#/graduation">졸업요건</a>
       <a href="#/check" class="nav-cta">다시 만들기</a>
@@ -7264,6 +7414,9 @@ textarea:focus {
       <span class="logo-label"><em>수원대</em> 스마트 시간표</span>
     </a>
     <div class="nav-links">
+      <a href="#/mytimetable">내 시간표</a>
+      <a href="#/calendar">학사일정</a>
+      <a href="#/reviews">강의평</a>
       <a href="#/rooms" style="color:var(--blue);font-weight:700;">빈 강의실</a>
       <a href="#/graduation">졸업요건</a>
       <a href="#/check" class="nav-cta">시간표 만들기</a>
@@ -7330,6 +7483,9 @@ textarea:focus {
       <span class="logo-label"><em>수원대</em> 스마트 시간표</span>
     </a>
     <div class="nav-links">
+      <a href="#/mytimetable">내 시간표</a>
+      <a href="#/calendar">학사일정</a>
+      <a href="#/reviews">강의평</a>
       <a href="#/rooms">빈 강의실</a>
       <a href="#/graduation" style="color:var(--blue);font-weight:700;">졸업요건</a>
       <a href="#/check" class="nav-cta">시간표 만들기</a>
@@ -7645,10 +7801,12 @@ textarea:focus {
           <span class="logo-label"><em>수원대</em> 스마트 시간표</span>
         </a>
         <div class="nav-links">
+          <a href="#/mytimetable">내 시간표</a>
           <a href="#/calendar">학사일정</a>
           <a href="#/reviews" class="active">강의평</a>
           <a href="#/rooms">빈 강의실</a>
           <a href="#/graduation">졸업요건</a>
+          <a href="#/check" class="nav-cta">시간표 만들기</a>
         </div>
       </div>
     </nav>
@@ -7691,10 +7849,12 @@ textarea:focus {
           <span class="logo-label"><em>수원대</em> 스마트 시간표</span>
         </a>
         <div class="nav-links">
+          <a href="#/mytimetable">내 시간표</a>
           <a href="#/calendar" class="active">학사일정</a>
           <a href="#/reviews">강의평</a>
           <a href="#/rooms">빈 강의실</a>
           <a href="#/graduation">졸업요건</a>
+          <a href="#/check" class="nav-cta">시간표 만들기</a>
         </div>
       </div>
     </nav>
@@ -7819,6 +7979,8 @@ textarea:focus {
         </a>
         <div class="nav-links">
           <a href="#/mytimetable" class="active">내 시간표</a>
+          <a href="#/calendar">학사일정</a>
+          <a href="#/reviews">강의평</a>
           <a href="#/rooms">빈 강의실</a>
           <a href="#/graduation">졸업요건</a>
           <a href="#/check" class="nav-cta">새 시간표 만들기</a>
@@ -31658,6 +31820,51 @@ renderPrereqs();
 window.addEventListener('DOMContentLoaded', () => {
   try { renderChecklist(); } catch(e) { console.warn('[renderChecklist late]', e); }
 });
+
+/* ─── 모바일 햄버거 메뉴 — 모든 navbar에 토글 버튼 자동 부착 ─── */
+function _setupMobileNav() {
+  document.querySelectorAll('.navbar-inner').forEach(inner => {
+    if (inner.querySelector('.nav-toggle')) return;  /* 이미 부착됨 */
+    const btn = document.createElement('button');
+    btn.className = 'nav-toggle';
+    btn.type = 'button';
+    btn.innerHTML = '☰';
+    btn.setAttribute('aria-label', '메뉴 열기');
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const links = inner.querySelector('.nav-links');
+      if (!links) return;
+      const isOpen = links.classList.toggle('open');
+      btn.innerHTML = isOpen ? '✕' : '☰';
+      btn.setAttribute('aria-label', isOpen ? '메뉴 닫기' : '메뉴 열기');
+    });
+    inner.appendChild(btn);
+  });
+}
+/* 메뉴 안의 링크 클릭하면 자동으로 닫기 */
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('.nav-links a');
+  if (a) {
+    const links = a.closest('.nav-links');
+    if (links && links.classList.contains('open')) {
+      links.classList.remove('open');
+      const btn = links.parentElement?.querySelector('.nav-toggle');
+      if (btn) { btn.innerHTML = '☰'; btn.setAttribute('aria-label','메뉴 열기'); }
+    }
+  } else {
+    /* 메뉴 바깥 클릭하면 닫기 */
+    document.querySelectorAll('.nav-links.open').forEach(links => {
+      if (!e.target.closest('.navbar-inner')) {
+        links.classList.remove('open');
+        const btn = links.parentElement?.querySelector('.nav-toggle');
+        if (btn) { btn.innerHTML = '☰'; btn.setAttribute('aria-label','메뉴 열기'); }
+      }
+    });
+  }
+});
+window.addEventListener('DOMContentLoaded', _setupMobileNav);
+window.addEventListener('hashchange', () => setTimeout(_setupMobileNav, 50));
+_setupMobileNav();  /* 즉시 실행 — DOMContentLoaded 후라면 바로 작동 */
 
 /* 애니메이션 */
 requestAnimationFrame(() => {
